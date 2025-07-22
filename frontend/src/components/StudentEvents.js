@@ -12,24 +12,34 @@ const StudentEvents = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await fetchRegisteredEvents();
-        await fetchEvents();
+  const fetchData = async () => {
+    try {
+      await fetchRegisteredEvents();
+      await fetchEvents();
 
-        const postLoginEventId = sessionStorage.getItem("registerAfterLogin");
-        if (postLoginEventId) {
+      // Auto-register only if login is successful and both fetches are done
+      const postLoginEventId = sessionStorage.getItem("registerAfterLogin");
+      if (postLoginEventId) {
+        sessionStorage.removeItem("registerAfterLogin");
+        // Add a slight delay to ensure backend session is ready
+        setTimeout(() => {
           handleRegister(Number(postLoginEventId));
-          sessionStorage.removeItem("registerAfterLogin");
-        }
-      } catch (err) {
-        console.error("User not logged in, redirecting to login.");
-        window.location.href = "/login";
+        }, 500);
       }
-    };
+    } catch (err) {
+      console.error("User not logged in, redirecting to login.");
+      // Save attempted event before redirecting
+      const url = new URL(window.location.href);
+      const eventToRegister = url.searchParams.get("register");
+      if (eventToRegister) {
+        sessionStorage.setItem("registerAfterLogin", eventToRegister);
+      }
+      window.location.href = "/login";
+    }
+  };
 
-    fetchData();
-  }, []);
+  fetchData();
+}, []);
 
   useEffect(() => {
     document.body.style.overflow = selectedEvent ? 'hidden' : 'auto';
