@@ -92,31 +92,41 @@ router.get('/registered', isStudent, async (req, res) => {
 });
 
 // ✅ Route: Filter events by club_name and/or event_type
-router.get('/filter', isStudent, async (req, res) => {
-  const { club_name, event_type } = req.query;
+// router.get('/filter', isStudent, async (req, res) => {
+//   const { club_name, event_type } = req.query;
 
-  let query = 'SELECT * FROM events WHERE 1=1';
-  const params = [];
+//   let query = 'SELECT * FROM events WHERE 1=1';
+//   const params = [];
 
-  if (club_name) {
-    query += ' AND club_name = ?';
-    params.push(club_name);
-  }
+//   if (club_name) {
+//     query += ' AND club_name = ?';
+//     params.push(club_name);
+//   }
 
-  if (event_type) {
-    query += ' AND event_type = ?';
-    params.push(event_type);
-  }
+//   if (event_type) {
+//     query += ' AND event_type = ?';
+//     params.push(event_type);
+//   }
 
-  query += ' ORDER BY date ASC';
+//   query += ' ORDER BY date ASC';
 
+//   try {
+//     const [results] = await db.query(query, params);
+//     res.json(results);
+//   } catch (err) {
+//     console.error('❌ Error filtering events:', err.message);
+//     res.status(500).json({ error: 'Failed to retrieve filtered events' });
+//   }
+// });
+
+// module.exports = router;
+// ✅ Get all events (used by frontend)
+router.get('/events/all', isStudent, async (req, res) => {
   try {
-    const [results] = await db.query(query, params);
-    res.json(results);
+    const [events] = await db.query('SELECT * FROM events ORDER BY date ASC');
+    res.json(events);
   } catch (err) {
-    console.error('❌ Error filtering events:', err.message);
-    res.status(500).json({ error: 'Failed to retrieve filtered events' });
+    console.error('❌ Error fetching all events:', err);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
-
-module.exports = router;
