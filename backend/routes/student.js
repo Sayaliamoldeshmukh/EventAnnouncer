@@ -126,7 +126,7 @@ router.get('/events/all', isStudent, async (req, res) => {
     const [events] = await db.query('SELECT * FROM events ORDER BY date ASC');
     res.json(events);
   } catch (err) {
-    console.error('❌ Error fetching all events:', err);
+    console.error('Error fetching all events:', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
