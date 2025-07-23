@@ -34,7 +34,8 @@ const sendRegistrationEmail = async (toEmail, userName, event) => {
       <h3 style="color: #007BFF;">🎯 <b>${event.title}</b></h3>
       
       <p><b>📅 Date:</b> ${formattedDate}</p>
-      <p><b>⏰ Time:</b> ${event.start_time} - ${event.end_time}</p>
+      <p><b>⏰ Time:</b> Please refer to the event page for details</p>
+
       <p><b>📍 Location:</b> ${event.location}</p>
       
       ${

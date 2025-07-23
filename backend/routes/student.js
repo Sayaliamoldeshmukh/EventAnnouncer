@@ -29,10 +29,11 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
 
     // Fetch student and event before inserting
     const [[student]] = await db.query('SELECT name, email FROM users WHERE id = ?', [studentId]);
-    const [[event]] = await db.query(
-      `SELECT title, date, start_time, end_time, location, poster_url FROM events WHERE id = ?`,
-      [eventId]
-    );
+   const [[event]] = await db.query(
+  `SELECT title, date, location, poster_url FROM events WHERE id = ?`,
+  [eventId]
+);
+
 
     // Insert after validation succeeds
     await db.query(
