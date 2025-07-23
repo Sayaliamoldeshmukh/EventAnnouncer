@@ -11,14 +11,14 @@ const isStudent = (req, res, next) => {
   next();
 };
 
-// // ✅ Register for event
+// ✅ Register for event
 router.post('/register/:eventId', isStudent, async (req, res) => {
   const studentId = req.session.user.id;
   const eventId = req.params.eventId;
 
   try {
     // 1. Check if already registered
-    const [existingRows] = await db.promise().query(
+    const [existingRows] = await db.query(
       'SELECT * FROM student_registrations WHERE student_id = ? AND event_id = ?',
       [studentId, eventId]
     );
@@ -28,18 +28,18 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
     }
 
     // 2. Register the student
-    await db.promise().query(
+    await db.query(
       'INSERT INTO student_registrations (student_id, event_id) VALUES (?, ?)',
       [studentId, eventId]
     );
 
-    // ✅ 3. Get student info from users table
-    const [[student]] = await db.promise().query(
+    // 3. Get student info from users table
+    const [[student]] = await db.query(
       'SELECT name, email FROM users WHERE id = ?',
       [studentId]
     );
 
-    const [[event]] = await db.promise().query(
+    const [[event]] = await db.query(
       'SELECT title FROM events WHERE id = ?',
       [eventId]
     );
