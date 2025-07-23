@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { sendRegistrationEmail } = require("../utils/emailService");
+const { sendRegistrationEmail } = require('../utils/emailService');
 
 // ✅ Middleware: Only allow logged-in students
 const isStudent = (req, res, next) => {
@@ -11,7 +11,7 @@ const isStudent = (req, res, next) => {
   next();
 };
 
-// ✅ Route: Register for an event
+// ✅ Register for event
 router.post('/register/:eventId', isStudent, async (req, res) => {
   const studentId = req.session.user.id;
   const eventId = req.params.eventId;
@@ -34,13 +34,11 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
     const [[student]] = await db.query('SELECT name, email FROM students WHERE id = ?', [studentId]);
     const [[event]] = await db.query('SELECT title FROM events WHERE id = ?', [eventId]);
 
-    // 📧 Optional: Send confirmation email
     try {
-  await sendRegistrationEmail(student.email, student.name, event.title);
-} catch (emailError) {
-  console.error('Failed to send registration email:', emailError);
-}
-
+      await sendRegistrationEmail(student.email, student.name, event.title);
+    } catch (emailError) {
+      console.error('Failed to send registration email:', emailError);
+    }
 
     res.status(200).json({ message: `Registered successfully for ${event.title}` });
   } catch (err) {
@@ -48,6 +46,8 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+// ✅ Send test email
 router.get('/test-email', async (req, res) => {
   try {
     await sendRegistrationEmail('deshmukhsayali080804@gmail.com', 'Test User', 'Test Event');
@@ -58,8 +58,7 @@ router.get('/test-email', async (req, res) => {
   }
 });
 
-// ✅ Route: Get all events (for logged-in students only)
-// Unique club names
+// ✅ Get unique club names
 router.get('/clubs', async (req, res) => {
   try {
     const [clubs] = await db.query('SELECT DISTINCT club_name FROM events');
@@ -70,8 +69,7 @@ router.get('/clubs', async (req, res) => {
   }
 });
 
-
-// ✅ Route: Get events student is registered for
+// ✅ Events registered by the student
 router.get('/registered', isStudent, async (req, res) => {
   try {
     const studentId = req.session.user.id;
@@ -91,36 +89,7 @@ router.get('/registered', isStudent, async (req, res) => {
   }
 });
 
-// ✅ Route: Filter events by club_name and/or event_type
-// router.get('/filter', isStudent, async (req, res) => {
-//   const { club_name, event_type } = req.query;
-
-//   let query = 'SELECT * FROM events WHERE 1=1';
-//   const params = [];
-
-//   if (club_name) {
-//     query += ' AND club_name = ?';
-//     params.push(club_name);
-//   }
-
-//   if (event_type) {
-//     query += ' AND event_type = ?';
-//     params.push(event_type);
-//   }
-
-//   query += ' ORDER BY date ASC';
-
-//   try {
-//     const [results] = await db.query(query, params);
-//     res.json(results);
-//   } catch (err) {
-//     console.error('❌ Error filtering events:', err.message);
-//     res.status(500).json({ error: 'Failed to retrieve filtered events' });
-//   }
-// });
-
-// module.exports = router;
-// ✅ Get all events (used by frontend)
+// ✅ Get all events for logged-in student
 router.get('/events/all', isStudent, async (req, res) => {
   try {
     const [events] = await db.query('SELECT * FROM events ORDER BY date ASC');
@@ -130,3 +99,5 @@ router.get('/events/all', isStudent, async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+module.exports = router;
