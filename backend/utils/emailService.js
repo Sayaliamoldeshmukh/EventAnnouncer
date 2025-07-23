@@ -1,7 +1,6 @@
 const nodemailer = require("nodemailer");
-require("dotenv").config(); // Load .env variables
+require("dotenv").config();
 
-// Email transporter using Gmail
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -9,32 +8,54 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
-transporter.verify(function (error, success) {
+
+transporter.verify((error, success) => {
   if (error) {
-    console.error('Transporter verification failed:', error);
+    console.error("❌ Transporter verification failed:", error);
   } else {
-    console.log('Server is ready to take messages');
+    console.log("✅ Mail transporter is ready");
   }
 });
 
-// Function to send registration confirmation email
-const sendRegistrationEmail = async (toEmail, userName, eventName) => {
+const sendRegistrationEmail = async (toEmail, userName, eventName, eventDate, eventTime, location, posterUrl) => {
   try {
     await transporter.sendMail({
       from: `"Event Manager" <${process.env.EMAIL_USER}>`,
       to: toEmail,
-      subject: "Event Registration Successful",
-      html: `<h3>Hello ${userName},</h3>
-             <p>You have successfully registered for the event: <b>${eventName}</b>.</p>
-             <p>Thank you for joining!</p>`,
+      subject: `🎉 You're Registered for ${eventName}!`,
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+          <h2>👋 Hello ${userName},</h2>
+          <p>✅ You’ve successfully registered for the event:</p>
+          <h3 style="color: #007BFF;">🎯 <b>${eventName}</b></h3>
+          
+          <p><b>📅 Date:</b> ${new Date(eventDate).toLocaleDateString()}</p>
+          <p><b>⏰ Time:</b> ${eventTime}</p>
+          <p><b>📍 Location:</b> ${location}</p>
+          
+          ${
+            posterUrl
+              ? `<div style="margin-top: 20px;">
+                  <img src="${posterUrl}" alt="Event Poster" style="max-width: 100%; height: auto; border-radius: 8px;" />
+                </div>`
+              : ''
+          }
+          
+          <p style="margin-top: 20px;">🙌 We’re excited to see you there!</p>
+          <p style="font-size: 14px; color: #555;">🎫 Don’t forget to check your email or our website for any updates.</p>
+          
+          <hr style="margin: 20px 0;" />
+          <p style="font-size: 12px; color: #aaa;">© ${new Date().getFullYear()} Event Manager | Powered by SortUs</p>
+        </div>
+      `,
     });
   } catch (error) {
-    console.error("Error sending registration email:", error);
+    console.error("❌ Error sending registration email:", error);
     throw error;
   }
 };
 
-// ✅ Function to send reminder email
+
 const sendReminderEmail = async (toEmail, userName, eventName, eventDate) => {
   try {
     await transporter.sendMail({
@@ -42,11 +63,11 @@ const sendReminderEmail = async (toEmail, userName, eventName, eventDate) => {
       to: toEmail,
       subject: `Reminder: ${eventName} is Tomorrow!`,
       html: `<h3>Hello ${userName},</h3>
-             <p>This is a reminder that <b>${eventName}</b> is scheduled for <b>${new Date(eventDate).toLocaleString()}</b>.</p>
+             <p>This is a reminder that <b>${eventName}</b> is scheduled for <b>${new Date(eventDate).toLocaleDateString()}</b>.</p>
              <p>Don't miss it!</p>`,
     });
   } catch (error) {
-    console.error("Error sending reminder email:", error);
+    console.error("❌ Error sending reminder email:", error);
   }
 };
 
