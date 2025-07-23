@@ -11,7 +11,7 @@ const isStudent = (req, res, next) => {
   next();
 };
 
-// ✅ Register for event
+// // ✅ Register for event
 router.post('/register/:eventId', isStudent, async (req, res) => {
   const studentId = req.session.user.id;
   const eventId = req.params.eventId;
@@ -32,7 +32,10 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
     );
 
     const [[student]] = await db.query('SELECT name, email FROM users WHERE id = ?', [studentId]);
-    const [[event]] = await db.query('SELECT title FROM events WHERE id = ?', [eventId]);
+    const [[event]] = await db.query(
+      `SELECT title, date, start_time, end_time, location, poster_url FROM events WHERE id = ?`,
+      [eventId]
+    );
 
     try {
       await sendRegistrationEmail(student.email, student.name, event.title);
@@ -40,7 +43,9 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
       console.error('Failed to send registration email:', emailError);
     }
 
-    res.status(200).json({ message: `Registered successfully for ${event.title}` });
+    res.status(200).json({
+      message: `✅ Registered successfully for ${event.title}. 📧 Confirmation email sent.`
+    });
   } catch (err) {
     console.error('❌ Error in register route:', err);
     res.status(500).json({ message: 'Internal server error' });

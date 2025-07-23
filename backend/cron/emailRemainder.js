@@ -3,10 +3,9 @@ const db = require('../db');
 const { sendReminderEmail } = require('../utils/emailService');
 
 // Cron job: runs every 15 minutes
-cron.schedule('*/15 * * * *', async () => {
+cron.schedule('0 10 * * *', async () => {
   try {
-    console.log('🕒 Running reminder job every 15 minutes...');
-
+    console.log('🕙 Running reminder job at 10:00 AM...');
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const yyyy = tomorrow.getFullYear();
