@@ -35,6 +35,7 @@ const StudentEvents = () => {
   fetchData();
 }, []);
 
+
   useEffect(() => {
     document.body.style.overflow = selectedEvent ? 'hidden' : 'auto';
   }, [selectedEvent]);
@@ -61,6 +62,7 @@ const StudentEvents = () => {
     console.error('Failed to fetch registered events:', error);
   }
 };
+
 
 
   const handleRegister = async (eventId) => {
