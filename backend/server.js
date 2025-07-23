@@ -4,6 +4,7 @@ const MySQLStore = require('express-mysql-session')(session);
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
+require('./cron/emailRemainder'); // ✅ Runs cron job automatically every 15 mins
 
 const db = require('./db');
 const authRoutes = require('./routes/auth');
