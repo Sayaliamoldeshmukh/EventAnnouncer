@@ -17,6 +17,7 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
   const eventId = req.params.eventId;
 
   try {
+    // Check if already registered
     const [existing] = await db.query(
       'SELECT * FROM student_registrations WHERE student_id = ? AND event_id = ?',
       [studentId, eventId]
@@ -26,26 +27,29 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
       return res.status(400).json({ message: 'Already registered' });
     }
 
-    await db.query(
-      'INSERT INTO student_registrations (student_id, event_id) VALUES (?, ?)',
-      [studentId, eventId]
-    );
-
+    // Fetch student and event before inserting
     const [[student]] = await db.query('SELECT name, email FROM users WHERE id = ?', [studentId]);
     const [[event]] = await db.query(
       `SELECT title, date, start_time, end_time, location, poster_url FROM events WHERE id = ?`,
       [eventId]
     );
 
-    try {
-      await sendRegistrationEmail(student.email, student.name, event.title);
-    } catch (emailError) {
-      console.error('Failed to send registration email:', emailError);
-    }
+    // Insert after validation succeeds
+    await db.query(
+      'INSERT INTO student_registrations (student_id, event_id) VALUES (?, ?)',
+      [studentId, eventId]
+    );
+
+    // Send email but don’t block response if it fails
+    sendRegistrationEmail(student.email, student.name, event.title)
+      .catch((emailError) => {
+        console.error('❌ Email failed (but registration success):', emailError);
+      });
 
     res.status(200).json({
-      message: `✅ Registered successfully for ${event.title}. 📧 Confirmation email sent.`
+      message: `✅ Registered successfully for ${event.title}. 📧 Confirmation email sent.`,
     });
+
   } catch (err) {
     console.error('❌ Error in register route:', err);
     res.status(500).json({ message: 'Internal server error' });
