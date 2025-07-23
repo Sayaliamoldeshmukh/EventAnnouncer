@@ -11,25 +11,29 @@ const StudentEvents = () => {
   const [selectedTab, setSelectedTab] = useState('upcoming');
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await fetchRegisteredEvents();
-        await fetchEvents();
+ useEffect(() => {
+  const fetchData = async () => {
+    try {
+      await fetchRegisteredEvents(); // Wait for session cookie to be accepted
+      await fetchEvents();
 
-        const postLoginEventId = sessionStorage.getItem("registerAfterLogin");
-        if (postLoginEventId) {
+      const postLoginEventId = sessionStorage.getItem("registerAfterLogin");
+
+      if (postLoginEventId) {
+        // Delay a bit to ensure session is fully set
+        setTimeout(() => {
           handleRegister(Number(postLoginEventId));
           sessionStorage.removeItem("registerAfterLogin");
-        }
-      } catch (err) {
-        console.error("User not logged in, redirecting to login.");
-        window.location.href = "/login";
+        }, 500); // small delay ensures backend gets the session
       }
-    };
+    } catch (err) {
+      console.error("User not logged in, redirecting to login.");
+      window.location.href = "/login";
+    }
+  };
 
-    fetchData();
-  }, []);
+  fetchData();
+}, []);
 
   useEffect(() => {
     document.body.style.overflow = selectedEvent ? 'hidden' : 'auto';
@@ -46,14 +50,18 @@ const StudentEvents = () => {
   };
 
   const fetchRegisteredEvents = async () => {
-    try {
-      const res = await axios.get('/api/student/registered');
-      const registeredIds = res.data.map((e) => e.event_id || e.id);
-      setRegisteredEvents(registeredIds);
-    } catch (error) {
-      console.error('Failed to fetch registered events:', error);
+  try {
+    const res = await axios.get('/api/student/registered');
+    const registeredIds = res.data.map((e) => e.event_id || e.id);
+    setRegisteredEvents(registeredIds);
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error("Not authenticated");
     }
-  };
+    console.error('Failed to fetch registered events:', error);
+  }
+};
+
 
   const handleRegister = async (eventId) => {
     try {
