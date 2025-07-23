@@ -33,9 +33,9 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
       [studentId, eventId]
     );
 
-    // 3. Get student and event info for email
+    // ✅ 3. Get student info from users table
     const [[student]] = await db.promise().query(
-      'SELECT name, email FROM students WHERE id = ?',
+      'SELECT name, email FROM users WHERE id = ?',
       [studentId]
     );
 
@@ -44,15 +44,14 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
       [eventId]
     );
 
-    // 4. Send email
+    // 4. Send confirmation email
     try {
       await sendRegistrationEmail(student.email, student.name, event.title);
     } catch (emailError) {
       console.error('⚠️ Email failed (but registration succeeded):', emailError);
-      // Don't stop the process
     }
 
-    // 5. Respond to client
+    // 5. Respond to frontend
     return res.status(200).json({
       message: `✅ Registered successfully for ${event.title}. 📧 Confirmation email sent.`,
     });
