@@ -17,43 +17,49 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
   const eventId = req.params.eventId;
 
   try {
-    // Check if already registered
-    const [existing] = await db.query(
+    // 1. Check if already registered
+    const [existingRows] = await db.promise().query(
       'SELECT * FROM student_registrations WHERE student_id = ? AND event_id = ?',
       [studentId, eventId]
     );
 
-    if (existing.length > 0) {
-      return res.status(400).json({ message: 'Already registered' });
+    if (existingRows.length > 0) {
+      return res.status(400).json({ message: 'Already registered for this event' });
     }
 
-    // Fetch student and event before inserting
-    const [[student]] = await db.query('SELECT name, email FROM users WHERE id = ?', [studentId]);
-   const [[event]] = await db.query(
-  `SELECT title, date, location, poster_url FROM events WHERE id = ?`,
-  [eventId]
-);
-
-
-    // Insert after validation succeeds
-    await db.query(
+    // 2. Register the student
+    await db.promise().query(
       'INSERT INTO student_registrations (student_id, event_id) VALUES (?, ?)',
       [studentId, eventId]
     );
 
-    // Send email but don’t block response if it fails
-    sendRegistrationEmail(student.email, student.name, event.title)
-      .catch((emailError) => {
-        console.error('❌ Email failed (but registration success):', emailError);
-      });
+    // 3. Get student and event info for email
+    const [[student]] = await db.promise().query(
+      'SELECT name, email FROM students WHERE id = ?',
+      [studentId]
+    );
 
-    res.status(200).json({
+    const [[event]] = await db.promise().query(
+      'SELECT title FROM events WHERE id = ?',
+      [eventId]
+    );
+
+    // 4. Send email
+    try {
+      await sendRegistrationEmail(student.email, student.name, event.title);
+    } catch (emailError) {
+      console.error('⚠️ Email failed (but registration succeeded):', emailError);
+      // Don't stop the process
+    }
+
+    // 5. Respond to client
+    return res.status(200).json({
       message: `✅ Registered successfully for ${event.title}. 📧 Confirmation email sent.`,
     });
 
-  } catch (err) {
-    console.error('❌ Error in register route:', err);
-    res.status(500).json({ message: 'Internal server error' });
+  } catch (error) {
+    console.error('❌ Error in register route:', error);
+    return res.status(500).json({ message: 'Something went wrong' });
   }
 });
 
