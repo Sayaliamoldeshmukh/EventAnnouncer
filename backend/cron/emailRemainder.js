@@ -1,6 +1,6 @@
 const cron = require('node-cron');
-const db = require('./db');
-const { sendEmail } = require('./utils/emailService');
+const db = require('../db');
+const { sendEmail } = require('../utils/emailService');
 
 // Cron job: runs every 15 minutes
 cron.schedule('*/15 * * * *', async () => {
