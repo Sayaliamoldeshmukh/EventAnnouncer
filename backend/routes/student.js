@@ -31,7 +31,7 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
       [studentId, eventId]
     );
 
-    const [[student]] = await db.query('SELECT name, email FROM students WHERE id = ?', [studentId]);
+    const [[student]] = await db.query('SELECT name, email FROM users WHERE id = ?', [studentId]);
     const [[event]] = await db.query('SELECT title FROM events WHERE id = ?', [eventId]);
 
     try {
