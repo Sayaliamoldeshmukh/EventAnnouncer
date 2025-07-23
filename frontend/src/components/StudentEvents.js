@@ -76,9 +76,13 @@ const StudentEvents = () => {
         sessionStorage.setItem("registerAfterLogin", eventId.toString());
         window.location.href = "/login";
       } else if (error.response?.status === 400) {
-        alert("ℹ You are already registered for this event.");
-        setRegisteredEvents((prev) => [...prev, eventId]);
-      } else {
+  // Only show alert once
+  if (!registeredEvents.includes(eventId)) {
+    alert("ℹ You are already registered for this event.");
+  }
+  setRegisteredEvents((prev) => [...new Set([...prev, eventId])]);
+}
+else {
         console.error("❌ Registration failed:", error);
         alert("❌ Something went wrong. Please try again.");
       }
