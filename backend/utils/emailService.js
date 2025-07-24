@@ -73,40 +73,12 @@ transporter.verify((error, success) => {
 //   }
 // };
 const sendRegistrationEmail = async (toEmail, userName, event) => {
-  const formattedDate = event.date
-    ? new Date(event.date).toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      })
-    : 'Not specified';
-
-  const formattedTime = event.time ? event.time.substring(0, 5) : 'Not specified';
-
   const htmlContent = `
     <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #fff; color: #333; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
       <h2 style="color: #333;">👋 Hello <span style="text-transform: capitalize;">${userName}</span>,</h2>
-      <p>You have successfully registered for the event:</p>
-
-      <h3 style="color: #007BFF;">🎯 <strong>${event.title || 'Untitled Event'}</strong></h3>
-
-      <p style="margin: 8px 0;"><strong>📅 Date:</strong> ${formattedDate}</p>
-      <p style="margin: 8px 0;"><strong>⏰ Time:</strong> ${formattedTime}</p>
-      <p style="margin: 8px 0;"><strong>📍 Location:</strong> ${event.location || 'Not specified'}</p>
-
-      ${
-        event.poster_url
-          ? `<div style="margin: 20px 0;">
-              <img src="https://eventannouncer.onrender.com${event.poster_url}" alt="Event Poster" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px;" />
-            </div>`
-          : ''
-      }
-
-      <p style="margin-top: 30px;">🙌 Thank you for joining!</p>
-
-      <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;" />
-
-      <p style="font-size: 12px; color: #888;">© ${new Date().getFullYear()} Event Manager | Powered by SortUs</p>
+      <p>You have successfully registered for the event: <strong>${event.title || 'Untitled Event'}</strong>.</p>
+      <p style="margin-top: 20px;">Thank you for joining!</p>
+      <p style="margin-top: 30px;">Visit our Webiste fo more details</p>
     </div>
   `;
 
@@ -122,6 +94,7 @@ const sendRegistrationEmail = async (toEmail, userName, event) => {
     throw error;
   }
 };
+
 
 // ✅ Reminder Email
 const sendReminderEmail = async (toEmail, subject, htmlContent) => {
