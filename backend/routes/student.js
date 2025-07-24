@@ -48,7 +48,8 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
 
     // 4. Send confirmation email
     try {
-      await sendRegistrationEmail(student.email, student.name, event.title);
+     await sendRegistrationEmail(student.email, student.name, event);
+
     } catch (emailError) {
       console.error('⚠️ Email failed (but registration succeeded):', emailError);
     }
