@@ -267,16 +267,14 @@ router.get('/event/:eventId/registrations', isClubAdmin, async (req, res) => {
 
 //===== Delete Event =====
 //===== Delete Event =====
-// ===== Soft Delete Event (preserve student_registrations) =====
 router.delete('/event/:eventId', isClubAdmin, async (req, res) => {
   const eventId = req.params.eventId;
   const userId = req.user.id;
 
   try {
-    // Check if event exists and belongs to the current club admin
+    // Check if event exists and belongs to current club admin
     const [check] = await db.execute(
-      'SELECT * FROM events WHERE created_by = ? AND is_deleted = FALSE'
-
+      'SELECT * FROM events WHERE id = ? AND created_by = ?',
       [eventId, userId]
     );
 
@@ -284,9 +282,12 @@ router.delete('/event/:eventId', isClubAdmin, async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized or event not found' });
     }
 
-    // Soft delete the event
+    // 1️⃣ First delete registrations related to this event
+    await db.execute('DELETE FROM student_registrations WHERE event_id = ?', [eventId]);
+
+    // 2️⃣ Then delete the event
     const [result] = await db.execute(
-      'UPDATE events SET is_deleted = TRUE WHERE id = ? AND created_by = ?',
+      'DELETE FROM events WHERE id = ? AND created_by = ?',
       [eventId, userId]
     );
 
@@ -294,12 +295,13 @@ router.delete('/event/:eventId', isClubAdmin, async (req, res) => {
       return res.status(400).json({ message: 'Failed to delete event' });
     }
 
-    res.json({ message: '✅ Event marked as deleted successfully' });
+    res.json({ message: '✅ Event and its registrations deleted successfully' });
   } catch (err) {
     console.error('❌ Error deleting event:', err);
     res.status(500).json({ message: 'Internal server error while deleting event' });
   }
 });
+
 
 
 module.exports = router;
