@@ -20,13 +20,56 @@ transporter.verify((error, success) => {
 });
 
 // ✅ Registration Email
+// const sendRegistrationEmail = async (toEmail, userName, event) => {
+//   const htmlContent = `
+//     <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #fff; color: #333; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+//       <h2 style="color: #333;">👋 Hello <span style="text-transform: capitalize;">${userName}</span>,</h2>
+//       <p>You have successfully registered for the event: <strong>${event.title || 'Untitled Event'}</strong>.</p>
+//       <p style="margin-top: 20px;">Thank you for joining!</p>
+//       <p style="margin-top: 30px;">Visit our website for more details.</p>
+//     </div>
+//   `;
+
+//   try {
+//     await transporter.sendMail({
+//       from: `"Event Manager" <${process.env.EMAIL_USER}>`,
+//       to: toEmail,
+//       subject: `🎉 You're Registered for ${event.title || 'an event'}!`,
+//       html: htmlContent,
+//     });
+//   } catch (error) {
+//     console.error("❌ Error sending registration email:", error);
+//     throw error;
+//   }
+// };
 const sendRegistrationEmail = async (toEmail, userName, event) => {
+  const formattedDate = new Date(event.date).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  const formattedTime = event.time ? event.time.substring(0, 5) : 'TBD';
+
   const htmlContent = `
     <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #fff; color: #333; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-      <h2 style="color: #333;">👋 Hello <span style="text-transform: capitalize;">${userName}</span>,</h2>
-      <p>You have successfully registered for the event: <strong>${event.title || 'Untitled Event'}</strong>.</p>
-      <p style="margin-top: 20px;">Thank you for joining!</p>
-      <p style="margin-top: 30px;">Visit our website for more details.</p>
+      <h2>👋 Hello <span style="text-transform: capitalize;">${userName}</span>,</h2>
+      <p>You have successfully registered for the event: <strong>${event.title}</strong>.</p>
+      <p><b>📅 Date:</b> ${formattedDate}</p>
+      <p><b>⏰ Time:</b> ${formattedTime}</p>
+      <p><b>📍 Location:</b> ${event.location}</p>
+
+      ${event.description ? `<p><b>📝 Description:</b> ${event.description}</p>` : ''}
+
+      ${
+        event.poster_url
+          ? `<img src="${event.poster_url}" alt="Event Poster" style="max-width: 100%; border-radius: 8px; margin-top: 15px;" />`
+          : ''
+      }
+
+      <p style="margin-top: 20px;">Looking forward to seeing you there!</p>
+      <hr style="margin-top: 30px;" />
+      <p style="font-size: 12px; color: #999;">This is an automated confirmation from Event Manager.</p>
     </div>
   `;
 
@@ -34,7 +77,7 @@ const sendRegistrationEmail = async (toEmail, userName, event) => {
     await transporter.sendMail({
       from: `"Event Manager" <${process.env.EMAIL_USER}>`,
       to: toEmail,
-      subject: `🎉 You're Registered for ${event.title || 'an event'}!`,
+      subject: `✅ Registered for ${event.title}`,
       html: htmlContent,
     });
   } catch (error) {

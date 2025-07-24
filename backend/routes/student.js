@@ -39,11 +39,12 @@ router.post('/register/:eventId', isStudent, async (req, res) => {
       [studentId]
     );
 
-    // 
+    
     const [[event]] = await db.query(
-  'SELECT title, date, time, location, poster AS poster_url FROM events WHERE id = ?',
+  'SELECT title, date, time, location, poster AS poster_url, description, club_name FROM events WHERE id = ?',
   [eventId]
 );
+
 
 
     // 4. Send confirmation email
