@@ -265,7 +265,7 @@ router.get('/event/:eventId/registrations', isClubAdmin, async (req, res) => {
   }
 });
 
-// ===== Delete Event =====
+//===== Delete Event =====
 router.delete('/event/:eventId', isClubAdmin, async (req, res) => {
   const eventId = req.params.eventId;
   try {
@@ -276,5 +276,6 @@ router.delete('/event/:eventId', isClubAdmin, async (req, res) => {
     res.status(500).json({ message: 'Error deleting event' });
   }
 });
+
 
 module.exports = router;
