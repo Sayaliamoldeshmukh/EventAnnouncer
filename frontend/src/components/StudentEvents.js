@@ -41,14 +41,17 @@ const StudentEvents = () => {
   }, [selectedEvent]);
 
   const fetchEvents = async () => {
-    try {
-      const res = await axios.get('/api/student/events/all');
-
-      setEvents(res.data || []);
-    } catch (error) {
-      console.error('Failed to fetch events:', error);
+  try {
+    const res = await axios.get('/api/student/events/all');
+    setEvents(res.data || []);
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error("Not authenticated");
     }
-  };
+    console.error('Failed to fetch events:', error);
+  }
+};
+
 
   const fetchRegisteredEvents = async () => {
   try {
@@ -177,11 +180,16 @@ else {
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 mb-16">
-        {filteredEvents[selectedTab]?.length > 0 ? (
-          filteredEvents[selectedTab].map(event => renderEventCard(event))
-        ) : (
-          <p className="text-center col-span-full text-gray-500">No events to display.</p>
-        )}
+       {filteredEvents[selectedTab]?.length > 0 ? (
+  filteredEvents[selectedTab].map(event => renderEventCard(event))
+) : (
+  <p className="text-center col-span-full text-gray-500">
+    {events.length === 0
+      ? "🔒 Please log in to view events."
+      : "No events to display."}
+  </p>
+)}
+
       </div>
 
       {/* Modal */}
