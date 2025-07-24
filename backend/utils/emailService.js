@@ -21,27 +21,33 @@ transporter.verify((error, success) => {
 
 // ✅ Registration Email
 const sendRegistrationEmail = async (toEmail, userName, event) => {
-  const formattedDate = new Date(event.date).toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+  const formattedDate = event.date
+    ? new Date(event.date).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : "Not specified";
+
+  const formattedTime = event.time ? event.time.substring(0, 5) : "Not specified";
+
+  // Replace with your actual base URL
+  const baseURL = 'https://eventannouncer.onrender.com';
 
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; color: #333;">
       <h2>👋 Hello ${userName},</h2>
       <p>✅ You’ve successfully registered for the event:</p>
-      <h3 style="color: #007BFF;">🎯 <b>${event.title}</b></h3>
+      <h3 style="color: #007BFF;">🎯 <b>${event.title || 'Untitled Event'}</b></h3>
       
       <p><b>📅 Date:</b> ${formattedDate}</p>
-      <p><b>⏰ Time:</b> Please refer to the event page for details</p>
-
-      <p><b>📍 Location:</b> ${event.location}</p>
+      <p><b>⏰ Time:</b> ${formattedTime}</p>
+      <p><b>📍 Location:</b> ${event.location || 'Not specified'}</p>
       
       ${
         event.poster_url
           ? `<div style="margin-top: 20px;">
-              <img src="${event.poster_url}" alt="Event Poster" style="max-width: 100%; height: auto; border-radius: 8px;" />
+              <img src="${baseURL}${event.poster_url}" alt="Event Poster" style="max-width: 100%; height: auto; border-radius: 8px;" />
             </div>`
           : ''
       }
@@ -58,7 +64,7 @@ const sendRegistrationEmail = async (toEmail, userName, event) => {
     await transporter.sendMail({
       from: `"Event Manager" <${process.env.EMAIL_USER}>`,
       to: toEmail,
-      subject: `🎉 You're Registered for ${event.title}!`,
+      subject: `🎉 You're Registered for ${event.title || 'an event'}!`,
       html: htmlContent,
     });
   } catch (error) {
