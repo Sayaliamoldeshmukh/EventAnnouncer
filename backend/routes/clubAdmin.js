@@ -266,16 +266,34 @@ router.get('/event/:eventId/registrations', isClubAdmin, async (req, res) => {
 });
 
 //===== Delete Event =====
+//===== Delete Event =====
 router.delete('/event/:eventId', isClubAdmin, async (req, res) => {
   const eventId = req.params.eventId;
+  const userId = req.user.id;
+
   try {
-    await db.execute('DELETE FROM events WHERE id = ?', [eventId]);
-    res.json({ message: 'Event deleted successfully' });
+    // First, check if event exists and belongs to the current club admin
+    const [check] = await db.execute(
+      'SELECT * FROM events WHERE id = ? AND created_by = ?',
+      [eventId, userId]
+    );
+
+    if (check.length === 0) {
+      return res.status(403).json({ message: 'Unauthorized or event not found' });
+    }
+
+    // Delete the event
+    const [result] = await db.execute('DELETE FROM events WHERE id = ? AND created_by = ?', [eventId, userId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ message: 'Failed to delete event' });
+    }
+
+    res.json({ message: '✅ Event deleted successfully' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error deleting event' });
+    console.error('❌ Error deleting event:', err);
+    res.status(500).json({ message: 'Internal server error while deleting event' });
   }
 });
-
 
 module.exports = router;
