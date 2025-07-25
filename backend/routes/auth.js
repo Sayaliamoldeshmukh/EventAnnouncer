@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const db = require('../db');
+const db = require('../db'); // mysql2/promise connection
+const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const { SignJWT, jwtVerify } = require('jose');
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
-// Convert secret to a Uint8Array
-const secret = new TextEncoder().encode(JWT_SECRET);
+
+
 // ===== SIGNUP =====
 router.post('/signup', async (req, res) => {
   const { name, email, password, phone, department, role, club_name } = req.body;
@@ -91,73 +90,71 @@ router.post('/logout', (req, res) => {
     res.json({ message: 'Logged out successfully' });
   });
 });
-// ===== Step 1: Send Reset Link =====
-router.post('/forgot-password', async (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ message: 'Email is required' });
-
-  try {
-    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (rows.length === 0) return res.status(404).json({ message: 'Email not registered' });
-
-    // Create JWT token with jose
-    const token = await new SignJWT({ email })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('15m')
-      .sign(secret);
-
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-
-    // Send email
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-
-    await transporter.sendMail({
-      to: email,
-      subject: 'Password Reset - Campus Events',
-      html: `<p>Click below to reset your password:</p>
-             <a href="${resetLink}">${resetLink}</a>
-             <p>This link is valid for 15 minutes.</p>`
-    });
-
-    res.json({ message: 'Password reset email sent successfully.' });
-  } catch (error) {
-    console.error('❌ Forgot Password error:', error);
-    res.status(500).json({ message: 'Server error. Try again later.' });
-  }
+// Step 1: Send Reset Link
+// Setup transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
-// ===== Step 2: Reset Password =====
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  // Check if user exists
+  const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+  if (users.length === 0) {
+    return res.status(404).json({ message: 'Email not found' });
+  }
+
+  // Generate secure random token
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+  // Store in password_resets table
+  await db.query(
+    'INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)',
+    [email, token, expiresAt]
+  );
+
+  // Create reset link
+  const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+
+  // Send reset link
+  await transporter.sendMail({
+    to: email,
+    subject: '🔐 Reset Your Password',
+    html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link expires in 15 minutes.</p>`,
+  });
+
+  res.json({ message: 'Reset link sent to your email.' });
+});
+// Step 2: Reset Password using Token
 router.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
   const { newPassword } = req.body;
 
-  if (!newPassword) return res.status(400).json({ message: 'Password is required' });
-
-  try {
-    // Verify token using jose
-    const { payload } = await jwtVerify(token, secret, {
-      algorithms: ['HS256'],
-    });
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    await db.query('UPDATE users SET password = ? WHERE email = ?', [
-      hashedPassword,
-      payload.email
-    ]);
-
-    res.json({ message: 'Password reset successful.' });
-  } catch (err) {
-    console.error('❌ Reset token error:', err);
-    res.status(400).json({ message: 'Invalid or expired token.' });
+  // Check token validity
+  const [rows] = await db.query('SELECT * FROM password_resets WHERE token = ?', [token]);
+  if (rows.length === 0 || new Date(rows[0].expires_at) < new Date()) {
+    return res.status(400).json({ message: 'Invalid or expired token.' });
   }
+
+  const email = rows[0].email;
+
+  // Hash new password
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  // Update user's password
+  await db.query('UPDATE users SET password = ? WHERE email = ?', [hashedPassword, email]);
+
+  // Delete used token
+  await db.query('DELETE FROM password_resets WHERE token = ?', [token]);
+
+  res.json({ message: '✅ Password successfully reset.' });
 });
 
-module.exports = router;
 
+module.exports = router;
