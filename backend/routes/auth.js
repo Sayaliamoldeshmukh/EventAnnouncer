@@ -131,7 +131,7 @@ router.post('/forgot-password', async (req, res) => {
     html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link expires in 15 minutes.</p>`,
   });
 
-  res.json({ message: 'Reset link sent to your email.Check your spam' });
+  res.json({ message: 'Reset link sent to your email.Check your spam or inbox' });
 });
 
 // Step 2: Reset Password using Token
