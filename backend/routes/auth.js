@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const db = require('../db'); // mysql2/promise connection
-const jwt = require('jsonwebtoken');
+const db = require('../db');
 const nodemailer = require('nodemailer');
+const { SignJWT, jwtVerify } = require('jose');
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
-
+// Convert secret to a Uint8Array
+const secret = new TextEncoder().encode(JWT_SECRET);
 // ===== SIGNUP =====
 router.post('/signup', async (req, res) => {
   const { name, email, password, phone, department, role, club_name } = req.body;
@@ -90,21 +91,24 @@ router.post('/logout', (req, res) => {
     res.json({ message: 'Logged out successfully' });
   });
 });
-// Step 1: Send Reset Link
+// ===== Step 1: Send Reset Link =====
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: 'Email is required' });
 
   try {
     const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (rows.length === 0)
-      return res.status(404).json({ message: 'Email not registered' });
+    if (rows.length === 0) return res.status(404).json({ message: 'Email not registered' });
 
-    const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '15m' }); // expires in 15 mins
+    // Create JWT token with jose
+    const token = await new SignJWT({ email })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('15m')
+      .sign(secret);
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
-    // Send Email
+    // Send email
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -127,7 +131,8 @@ router.post('/forgot-password', async (req, res) => {
     res.status(500).json({ message: 'Server error. Try again later.' });
   }
 });
-// Step 2: Reset Password using Token
+
+// ===== Step 2: Reset Password =====
 router.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
   const { newPassword } = req.body;
@@ -135,12 +140,16 @@ router.post('/reset-password/:token', async (req, res) => {
   if (!newPassword) return res.status(400).json({ message: 'Password is required' });
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    // Verify token using jose
+    const { payload } = await jwtVerify(token, secret, {
+      algorithms: ['HS256'],
+    });
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await db.query('UPDATE users SET password = ? WHERE email = ?', [
       hashedPassword,
-      decoded.email
+      payload.email
     ]);
 
     res.json({ message: 'Password reset successful.' });
@@ -151,3 +160,4 @@ router.post('/reset-password/:token', async (req, res) => {
 });
 
 module.exports = router;
+
