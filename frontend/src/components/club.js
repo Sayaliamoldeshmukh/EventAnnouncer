@@ -265,7 +265,7 @@ const Clubs = () => {
             <div className="md:w-1/2 text-center md:text-left mt-10 md:mt-0">
               <h1 className="text-5xl font-bold text-white mb-4">CLUBS</h1>
               <p className="text-xl text-yellow-300 max-w-md">
-                "Discover, Create, Connect – Join a club and explore your passion at MITAOE."
+                "DISCOVER CLUBS - Explore the various clubs at our college and get to know their vision, activities, and focus areas"
               </p>
             </div>
 
