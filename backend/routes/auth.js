@@ -106,10 +106,10 @@ router.post('/forgot-password', async (req, res) => {
   // Check if user exists
   const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
   if (users.length === 0) {
-    return res.status(404).json({ message: 'Email not found' });
+    return res.status(404).json({ message: 'You are not signed up. Please register first.' });
   }
 
-  // Generate secure random token
+  // Generate secure token
   const token = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
@@ -122,7 +122,7 @@ router.post('/forgot-password', async (req, res) => {
   // Create reset link
   const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
-  // Send reset link
+  // Send email
   await transporter.sendMail({
     to: email,
     subject: '🔐 Reset Your Password',
@@ -131,6 +131,7 @@ router.post('/forgot-password', async (req, res) => {
 
   res.json({ message: 'Reset link sent to your email.' });
 });
+
 // Step 2: Reset Password using Token
 router.post('/reset-password/:token', async (req, res) => {
   const { token } = req.params;
