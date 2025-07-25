@@ -3,7 +3,7 @@ const db = require('../db');
 const { sendReminderEmail } = require('../utils/emailService');
 
 // Cron job: runs every 15 minutes
-cron.schedule('0 11 * * *', async () => {
+cron.schedule('*/15 * * * *', async () => {
   try {
     console.log('🕙 Running reminder job at 11:00 AM...');
     const tomorrow = new Date();
@@ -27,7 +27,7 @@ cron.schedule('0 11 * * *', async () => {
     `, [targetDate]);
 
     for (const row of events) {
-      await sendEmail(
+      await sendReminderEmail(
         row.email,
         `⏰ Reminder: ${row.eventName} is Tomorrow!`,
         `<p>Dear ${row.studentName},<br>Your event <b>${row.eventName}</b> is scheduled for tomorrow.<br>See you there!</p>`
