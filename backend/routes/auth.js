@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../db'); // mysql2/promise connection
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
 // ===== SIGNUP =====
 router.post('/signup', async (req, res) => {
@@ -86,6 +89,65 @@ router.post('/logout', (req, res) => {
     res.clearCookie('session_cookie_name'); // adjust this to match your session cookie name
     res.json({ message: 'Logged out successfully' });
   });
+});
+// Step 1: Send Reset Link
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ message: 'Email is required' });
+
+  try {
+    const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (rows.length === 0)
+      return res.status(404).json({ message: 'Email not registered' });
+
+    const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '15m' }); // expires in 15 mins
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+
+    // Send Email
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    await transporter.sendMail({
+      to: email,
+      subject: 'Password Reset - Campus Events',
+      html: `<p>Click below to reset your password:</p>
+             <a href="${resetLink}">${resetLink}</a>
+             <p>This link is valid for 15 minutes.</p>`
+    });
+
+    res.json({ message: 'Password reset email sent successfully.' });
+  } catch (error) {
+    console.error('❌ Forgot Password error:', error);
+    res.status(500).json({ message: 'Server error. Try again later.' });
+  }
+});
+// Step 2: Reset Password using Token
+router.post('/reset-password/:token', async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  if (!newPassword) return res.status(400).json({ message: 'Password is required' });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await db.query('UPDATE users SET password = ? WHERE email = ?', [
+      hashedPassword,
+      decoded.email
+    ]);
+
+    res.json({ message: 'Password reset successful.' });
+  } catch (err) {
+    console.error('❌ Reset token error:', err);
+    res.status(400).json({ message: 'Invalid or expired token.' });
+  }
 });
 
 module.exports = router;
