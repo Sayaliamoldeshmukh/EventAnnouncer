@@ -21,6 +21,8 @@
     "express": "^5.1.0",
     "express-mysql-session": "^3.0.3",
     "express-session": "^1.18.1",
+    "jose": "^6.0.12",
+    "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.1",
     "multer-storage-cloudinary": "^4.0.0",
     "mysql2": "^3.14.1",
