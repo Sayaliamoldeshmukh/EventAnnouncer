@@ -28,7 +28,7 @@ export default function ForgotPassword() {
           required
         />
         <button type="submit" className="w-full bg-purple-700 text-white py-2 rounded">
-          Send Reset Link
+          Send Reset Link 
         </button>
       </form>
       {message && <p className="mt-4 text-center">{message}</p>}

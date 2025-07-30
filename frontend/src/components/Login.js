@@ -135,7 +135,8 @@ export default function Login({ setUser }) {
     setError('');
 
     try {
-      const res = await axios.post('/api/auth/login', { email, password });
+      const res = await axios.post('/api/auth/login', { email, password }, { withCredentials: true });
+
 
       setUser(res.data.user);
       alert(res.data.message);
