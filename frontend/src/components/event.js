@@ -373,7 +373,7 @@ const Event = () => {
         });
         setSuccessMessage('✅ Event updated successfully!');
       } else {
-        const res = await axios.post('/api/clubAdmin/events', data);
+         await axios.post('/api/clubAdmin/events', data);
         // const emailsSent = res.data?.emailsSent || 0;
         // setSuccessMessage(`✅ Event created and invitations sent to ${emailsSent} students!`);
         setSuccessMessage('✅ Event created and invitations sent to students!');
