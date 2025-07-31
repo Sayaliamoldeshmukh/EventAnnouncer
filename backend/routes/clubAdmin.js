@@ -174,6 +174,11 @@ router.post('/events', isClubAdmin, upload.single('poster'), async (req, res) =>
     console.log(`📧 Sending event announcement to ${students.length} students`);
 
     // Send event announcement emails
+    res.json({ message: 'Event created successfully', id: eventId }); // Send response first
+
+// Send emails in background
+(async () => {
+  try {
     const emailPromises = students.map(student =>
       sendEventAnnouncementEmail(student.email, student.name, {
         title,
@@ -186,8 +191,13 @@ router.post('/events', isClubAdmin, upload.single('poster'), async (req, res) =>
         poster
       })
     );
-
     await Promise.all(emailPromises);
+    console.log(`📧 Emails sent successfully to ${students.length} students`);
+  } catch (emailErr) {
+    console.error('❌ Error sending announcement email:', emailErr);
+  }
+})();
+
 
     res.json({ message: 'Event created and notifications sent', id: eventId });
   } catch (err) {
