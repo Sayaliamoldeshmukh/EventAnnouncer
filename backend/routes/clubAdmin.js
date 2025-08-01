@@ -166,6 +166,7 @@ router.post('/events', isClubAdmin, upload.single('poster'), async (req, res) =>
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [title, description, date, time, location, poster, created_by, club_name, event_type]
     );
+
     const eventId = result.insertId;
     console.log('✅ Event inserted ID:', eventId);
 
@@ -173,38 +174,37 @@ router.post('/events', isClubAdmin, upload.single('poster'), async (req, res) =>
     const [students] = await db.execute(`SELECT name, email FROM users WHERE role = 'student'`);
     console.log(`📧 Sending event announcement to ${students.length} students`);
 
-    // Send event announcement emails
-    res.json({ message: 'Event created successfully', id: eventId }); // Send response first
+    // Send event created response IMMEDIATELY
+    res.json({ message: 'Event created successfully', id: eventId });
 
-// Send emails in background
-(async () => {
-  try {
-    const emailPromises = students.map(student =>
-      sendEventAnnouncementEmail(student.email, student.name, {
-        title,
-        description,
-        date,
-        time,
-        location,
-        club_name,
-        event_type,
-        poster
-      })
-    );
-    await Promise.all(emailPromises);
-    console.log(`📧 Emails sent successfully to ${students.length} students`);
-  } catch (emailErr) {
-    console.error('❌ Error sending announcement email:', emailErr);
-  }
-})();
+    // Send emails in background (async but NOT awaiting)
+    (async () => {
+      try {
+        const emailPromises = students.map(student =>
+          sendEventAnnouncementEmail(student.email, student.name, {
+            title,
+            description,
+            date,
+            time,
+            location,
+            club_name,
+            event_type,
+            poster
+          })
+        );
+        await Promise.all(emailPromises);
+        console.log(`📧 Emails sent successfully to ${students.length} students`);
+      } catch (emailErr) {
+        console.error('❌ Error sending announcement email:', emailErr);
+      }
+    })();
 
-
-    res.json({ message: 'Event created and notifications sent', id: eventId });
   } catch (err) {
     console.error('❌ DB Error /events:', err);
-    res.status(500).json({ message: 'Error creating event or sending emails' });
+    return res.status(500).json({ message: 'Error creating event or sending emails' });
   }
 });
+
 
 // ===== Edit Event (with optional new poster) =====
 router.put('/event/:eventId', isClubAdmin, upload.single('poster'), async (req, res) => {
