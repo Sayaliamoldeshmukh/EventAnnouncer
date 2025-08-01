@@ -10,7 +10,7 @@ const db = require('./db');
 const authRoutes = require('./routes/auth');
 const clubAdminRoutes = require('./routes/clubAdmin');
 const eventRoutes = require('./routes/events');
-const studentRoutes = require('./routes/student'); // ✅ Make sure this is working
+const studentRoutes = require('./routes/student');
 const cronRoutes = require('./routes/cron');
 
 const app = express();
@@ -20,6 +20,7 @@ if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
 }
 
+// ✅ Enable CORS
 app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true
@@ -27,23 +28,22 @@ app.use(cors({
 
 app.use(express.json());
 
-// ✅ MySQL session store setup
+// ✅ MySQL session store setup (Updated for Railway)
 const sessionStore = new MySQLStore({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD, // ✅ updated
-  database: process.env.DB_NAME,
+  host: process.env.DB_HOST || 'metro.proxy.rlwy.net',
+  port: process.env.DB_PORT || 23383, // ✅ Railway port
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'railway',
   clearExpired: true,
   checkExpirationInterval: 900000,
   expiration: 86400000
 });
 
-
 // ✅ Use session middleware
 app.use(session({
   key: 'session_cookie_name',
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'supersecretkey',
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
@@ -51,7 +51,7 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     sameSite: 'none',
-    maxAge: 1000 * 60 * 60
+    maxAge: 1000 * 60 * 60 // 1 hour
   }
 }));
 
@@ -62,7 +62,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/clubAdmin', clubAdminRoutes);
 app.use('/api/events', eventRoutes);
-app.use('/api/student', studentRoutes); // ✅ This includes your student routes
+app.use('/api/student', studentRoutes);
 app.use('/api/cron', cronRoutes);
 
 // ✅ Dashboard route
@@ -76,7 +76,7 @@ app.get('/api/dashboard', (req, res) => {
 
 // ✅ Root
 app.get('/', (req, res) => {
-  res.send('🌐 Campus Events API is running!');
+  res.send('🌐 Campus Events API is running with Railway DB!');
 });
 
 app.listen(PORT, () => {
