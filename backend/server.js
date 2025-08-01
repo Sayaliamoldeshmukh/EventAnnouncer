@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // ✅ Enable CORS
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: 'https://event-announcer1.vercel.app', // <-- Add your frontend domain here
   credentials: true
 }));
 
