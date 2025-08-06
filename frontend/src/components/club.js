@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './club.css';
-import Navbar from './navbar.js';
+//import Navbar from './navbar.js';
 
 const clubs = [
   {
@@ -241,7 +241,7 @@ const Clubs = () => {
 
   return (
     <div className={`min-h-screen bg-gray-50 ${selectedClub ? 'backdrop-blur-sm' : ''}`}>
-      <Navbar />
+      {/* <Navbar /> */}
 
       <div>
         {/* Header */}
