@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
+import Navbar from './components/navbar';
 import Home from './HomePage';
 import Club from './components/club';
 import Login from './components/Login';
@@ -28,7 +28,7 @@ function App() {
 
   return (
     <Router>
-      {/* <Header user={user} setUser={setUser} /> */}
+      <Navbar user={user} setUser={setUser} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />

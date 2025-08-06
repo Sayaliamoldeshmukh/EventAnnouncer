@@ -1,5 +1,5 @@
 import React from 'react';
-import Navbar from './components/navbar';
+// import Navbar from './components/navbar';
 import Footer from './components/Footer';
 
 const gatheringPhotos = [
@@ -20,7 +20,7 @@ const HomePage = () => {
       {/* ✅ Gradient Section */}
       <div className="min-h-screen bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
         {/* ✅ Navbar */}
-        <Navbar />
+        {/* <Navbar /> */}
 
         {/* ✅ Hero Section with Floating Stars */}
         <section className="relative py-24 px-6 overflow-hidden">
