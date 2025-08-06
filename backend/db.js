@@ -2,11 +2,11 @@ require('dotenv').config();
 const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'metro.proxy.rlwy.net',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'railway',
-  port: process.env.DB_PORT || 23383,  // ✅ Railway port
+  host: process.env.host || 'metro.proxy.rlwy.net',
+  port: process.env.port || 44571, // ✅ Railway port
+  user: process.env.user || 'root',
+  password: process.env.password || '',
+  database: process.env.database || 'railway',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
