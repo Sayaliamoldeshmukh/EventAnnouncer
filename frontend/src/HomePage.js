@@ -1,168 +1,148 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import Navbar from './components/navbar';
+import Footer from './components/Footer';
 
 const gatheringPhotos = [
-  "/images/event1.jpg", "/images/event2.jpg", "/images/event3.jpg",
-  "/images/event4.jpg", "/images/event5.jpg", "/images/event6.jpg",
-  "/images/event7.JPG", "/images/event8.JPG", "/images/event9.JPG",
+  "/images/event1.jpg",
+  "/images/event2.jpg",
+  "/images/event3.jpg",
+  "/images/event4.jpg",
+  "/images/event5.jpg",
+  "/images/event6.jpg",
+  "/images/event7.jpg",
+  "/images/event8.jpg",
+  "/images/event9.jpg",
 ];
 
 const HomePage = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Bar */}
-      <nav className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between items-center py-4">
-            <div className="text-2xl font-bold">Campus Events</div>
-            <div className="hidden md:flex space-x-6">
-              <Link to="/" className="hover:text-indigo-200 font-medium">Home</Link>
-              <Link to="/event" className="hover:text-indigo-200 font-medium">Events</Link>
-              <Link to="/club" className="hover:text-indigo-200 font-medium">Clubs</Link>
-              <Link to="/login" className="hover:text-indigo-200 font-medium">Login</Link>
-            </div>
-            <button
-              className="md:hidden focus:outline-none"
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-          {menuOpen && (
-            <div className="md:hidden pb-4 space-y-2">
-              <Link to="/" className="block hover:text-indigo-200">Home</Link>
-              <Link to="/event" className="block hover:text-indigo-200">Events</Link>
-              <Link to="/club" className="block hover:text-indigo-200">Clubs</Link>
-              <Link to="/login" className="block hover:text-indigo-200">Login</Link>
-            </div>
-          )}
-        </div>
-      </nav>
+    <>
+      {/* ✅ Gradient Section */}
+      <div className="min-h-screen bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+        {/* ✅ Navbar */}
+        <Navbar />
 
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-20 overflow-hidden z-0">
-        <div className="absolute inset-0 z-0">
+        {/* ✅ Hero Section with Floating Stars */}
+        <section className="relative py-24 px-6 overflow-hidden">
           {Array.from({ length: 25 }).map((_, index) => (
             <img
               key={index}
               src="/assets/sparkling.png"
               alt="Sparkle"
-              className="absolute w-4 h-4 sparkle pointer-events-none"
+              className="absolute w-8 h-8 opacity-100 pointer-events-none animate-pulse"
               style={{
                 top: `${Math.random() * 100}%`,
                 left: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
+                animationDelay: `${Math.random() * 5}s`
               }}
             />
           ))}
-        </div>
-        <div className="relative z-10 text-center px-4 sm:px-10">
-          <h1 className="text-3xl sm:text-5xl font-bold leading-tight">
-            MITAOE’s<br />
-            <span className="text-yellow-400">Campus Events</span>
-          </h1>
-          <p className="mt-4 text-lg sm:text-xl">Discover amazing events, connect with clubs, and make unforgettable memories.</p>
-          <p className="mt-2 text-base sm:text-xl">Your gateway to an incredible college experience starts here.</p>
-        </div>
+          <div className="relative z-10 text-center">
+            <h1 className="text-5xl font-extrabold">
+              Campus <span className="text-pink-300">Events</span>
+            </h1>
+            <p className="mt-4 text-lg max-w-2xl mx-auto">
+              Discover amazing events, connect with clubs, and make unforgettable memories.
+              <br /> Your gateway to an incredible college experience starts here.
+            </p>
+
+            {/* ✅ Buttons */}
+            <div className="mt-8 flex justify-center gap-4">
+              <a href="/event" className="bg-white text-purple-600 px-5 py-2 rounded-lg shadow-md hover:bg-purple-100 flex items-center gap-2">
+                📅 View Events →
+              </a>
+              <a href="/club" className="border border-white px-5 py-2 rounded-lg hover:bg-white hover:text-purple-700 transition">
+                👥 Join Clubs →
+              </a>
+            </div>
+
+            {/* ✅ Stats Cards */}
+            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {[
+                { number: "50+", label: "Active Events" },
+                { number: "25+", label: "Student Clubs" },
+                { number: "1000+", label: "Students Engaged" }
+              ].map((card, i) => (
+                <div key={i} className="bg-white/10 backdrop-blur-md rounded-lg p-6 border border-white/20 shadow-lg hover:scale-105 hover:shadow-xl transition">
+                  <h3 className="text-3xl font-bold">{card.number}</h3>
+                  <p className="mt-2">{card.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ✅ How It Works */}
+        <section className="py-16 text-center bg-white text-gray-800">
+          <div className="max-w-6xl mx-auto px-4">
+            <img src="/assets/calender.png" alt="Calendar Icon" className="w-12 h-12 mx-auto mb-4" />
+            <h2 className="text-4xl font-bold text-purple-700 mb-4">How It Works</h2>
+            <p className="text-gray-600 mb-10 text-lg max-w-3xl mx-auto">
+              Getting involved in campus life is easy. Follow these simple steps to start your journey.
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-8 justify-items-center">
+              {[
+                { icon: "📅", title: "Discover Events", desc: "Browse through a variety of events happening across campus. Filter by your interests and find what excites you." },
+                { icon: "👥", title: "Register for Events", desc: "Sign up for events that interest you and get reminders. Track your registrations and never miss an important event." },
+                { icon: "⭐", title: "Explore Clubs", desc: "Learn about different clubs and organizations on campus. Discover what each club offers and their upcoming activities." }
+              ].map((item, i) => (
+                <div key={i} className="bg-white border rounded-lg shadow-lg p-8 w-full max-w-xs transform transition duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-400">
+                  <div className="text-purple-600 text-4xl mb-4">{item.icon}</div>
+                  <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                  <p className="text-gray-600">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ✅ Event Gallery */}
+        <section className="pt-8 pb-16 bg-gray-100 text-gray-900 px-8 sm:px-16 md:px-24">
+          <div className="text-center mb-10">
+            <img src="/assets/camera.jpg" alt="Gallery Icon" className="w-12 h-12 mx-auto mb-4" />
+            <h2 className="text-4xl font-bold text-purple-700">Event Gallery</h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {[
+              { src: "/images/firodiya.jpg", caption: "Firodiya" },
+              { src: "/images/annual-sports.jpg", caption: "Annual Sports" },
+              { src: "/images/club-event.jpg", caption: "Club Event" }
+            ].map((img, i) => (
+              <div key={i} className="relative group overflow-hidden rounded-lg shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-2xl">
+                <img src={img.src} alt={img.caption} className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+                  <h3 className="text-white text-xl font-semibold">{img.caption}</h3>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
 
-      {/* How It Works */}
-      <section className="pt-12 pb-12 text-center px-4 relative z-10">
-        <div className="max-w-5xl mx-auto">
-          <img src="/assets/calender.png" alt="Calendar Icon" className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4" />
-          <h2 className="text-3xl sm:text-4xl font-bold text-purple-700 mb-4">How It Works</h2>
-          <p className="text-gray-600 mb-10 text-base sm:text-lg">
-            Getting involved in campus life is easy. Follow these simple steps to start your journey.
-          </p>
+      {/* ✅ Nakshatra Section (White background) */}
+      <section className="relative text-center px-8 sm:px-16 md:px-24 pt-10 pb-6 bg-white text-gray-900">
+        <img src="/assets/mandola.png" alt="Mandala Art" className="absolute left-4 top-4 w-40 sm:w-56 md:w-64 opacity-60" />
+        <h2 className="text-4xl font-bold text-purple-800 relative z-10">Nakshatra</h2>
+        <p className="mt-2 text-lg text-gray-700 relative z-10">
+          Some glimpse of the MITAOE's annual function
+        </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            <Link to="/event" className="relative z-10 bg-white border rounded-lg shadow-lg shadow-purple-300 p-6 sm:p-8 w-full max-w-xs mx-auto hover:shadow-xl transition-all">
-              <div className="text-purple-600 text-3xl sm:text-4xl mb-4">📅</div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">Discover Events</h3>
-              <p className="text-gray-600 text-sm sm:text-base">Browse through a variety of events happening across campus.</p>
-            </Link>
-
-            <Link to="/event" className="relative z-10 bg-white border rounded-lg shadow-lg shadow-purple-300 p-6 sm:p-8 w-full max-w-xs mx-auto hover:shadow-xl transition-all">
-              <div className="text-purple-600 text-3xl sm:text-4xl mb-4">👥</div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">Register for Events</h3>
-              <p className="text-gray-600 text-sm sm:text-base">Sign up and track your registrations with reminders.</p>
-            </Link>
-
-            <Link to="/club" className="relative z-10 bg-white border rounded-lg shadow-lg shadow-purple-300 p-6 sm:p-8 w-full max-w-xs mx-auto hover:shadow-xl transition-all">
-              <div className="text-purple-600 text-3xl sm:text-4xl mb-4">⭐</div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2">Explore Clubs</h3>
-              <p className="text-gray-600 text-sm sm:text-base">Learn about clubs and their upcoming activities.</p>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Event Gallery */}
-      <section className="pt-8 pb-16 bg-gray-50 px-4 sm:px-8 md:px-24">
-        <div className="text-center mb-10">
-          <img src="/assets/camera.jpg" alt="Gallery Icon" className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4" />
-          <h2 className="text-3xl sm:text-4xl font-bold text-purple-700">Event Gallery</h2>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {[
-            { src: "/images/firodiya.jpg", label: "Firodiya" },
-            { src: "/images/annual-sports.jpg", label: "Annual Sports" },
-            { src: "/images/club-event.jpg", label: "Club Event" },
-          ].map((img, i) => (
-            <div key={i} className="relative group overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-              <img src={img.src} alt={img.label} className="w-full h-52 sm:h-64 object-cover transition-transform duration-500 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
-                <h3 className="text-white text-xl font-semibold">{img.label}</h3>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Nakshatra Section */}
-      <section className="relative px-4 sm:px-8 md:px-24 pt-10 pb-6 text-center">
-        <img
-          src="/assets/mandola.png"
-          alt="Mandala Art"
-          className="absolute left-10 bottom-0 w-28 sm:w-40 md:w-56 z-0"
-          style={{ transform: "translateY(35%)" }}
-        />
-        <div className="relative z-10">
-          <h2 className="text-3xl sm:text-4xl font-bold text-purple-800">Nakshatra</h2>
-          <p className="mt-2 text-base sm:text-lg text-gray-700">Some glimpses of the MITAOE's annual function</p>
-        </div>
-      </section>
-
-      {/* Gathering Photos */}
-      <section className="px-4 sm:px-8 md:px-24 py-10">
-        <div className="max-w-7xl mx-auto rounded-xl p-6 bg-yellow-100">
+        <div className="max-w-7xl mx-auto mt-6 rounded-2xl p-6 bg-yellow-200 shadow-inner shadow-yellow-300/50 border border-yellow-300">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             {gatheringPhotos.map((src, idx) => (
-              <div key={idx} className="overflow-hidden rounded-xl shadow-md">
-                <img
-                  src={src}
-                  alt={`College Event ${idx + 1}`}
-                  className="w-full h-40 sm:h-48 object-cover hover:scale-105 transition-transform duration-300"
-                />
+              <div key={idx} className="overflow-hidden rounded-xl shadow-lg transform transition duration-300 hover:scale-105 hover:shadow-yellow-500/60">
+                <img src={src} alt={`College Event ${idx + 1}`} className="w-full h-40 object-cover transition-transform duration-300 hover:scale-110" />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-purple-800 text-white py-6 px-4">
-        <div className="max-w-6xl mx-auto text-center text-sm sm:text-base">
-          <p>&copy; {new Date().getFullYear()} Campus Events. All rights reserved.</p>
-        </div>
-      </footer>
-    </div>
+      {/* ✅ Footer */}
+      <Footer />
+    </>
   );
 };
 
