@@ -27,7 +27,7 @@ const Signup = () => {
     e.preventDefault();
     try {
       const res = await axios.post('/api/auth/send-otp', { email });
-      toast.success(res.data.message);
+      toast.success("OTP Send successfully ");
       setStep(2);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send OTP');
@@ -39,7 +39,7 @@ const Signup = () => {
     e.preventDefault();
     try {
       const res = await axios.post('/api/auth/verify-otp', { email, otp });
-      toast.success(res.data.message);
+      toast.success("Verification Successfull");
       setStep(3);
     } catch (err) {
       toast.error(err.response?.data?.message || 'OTP verification failed');
@@ -60,7 +60,7 @@ const Signup = () => {
         ...form,
         email, // include verified email
       });
-      toast.success(res.data.message);
+      toast.success("Signup Successfull");
       navigate('/login');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Signup failed');
