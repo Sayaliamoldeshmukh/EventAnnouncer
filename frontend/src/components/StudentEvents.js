@@ -233,7 +233,9 @@
 // export default StudentEvents;
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Navbar from '../components/navbar';
+import { toast, Toaster } from 'react-hot-toast';
+// import Navbar from '../components/navbar';
+import Footer from '../components/Footer';
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
@@ -251,16 +253,16 @@ const StudentEvents = () => {
         await fetchRegisteredEvents();
         await fetchEvents();
 
-        const postLoginEventId = sessionStorage.getItem("registerAfterLogin");
+        const postLoginEventId = sessionStorage.getItem('registerAfterLogin');
         if (postLoginEventId) {
           setTimeout(() => {
             handleRegister(Number(postLoginEventId));
-            sessionStorage.removeItem("registerAfterLogin");
+            sessionStorage.removeItem('registerAfterLogin');
           }, 500);
         }
       } catch (err) {
-        console.error("User not logged in, redirecting to login.");
-        window.location.href = "/login";
+        console.error('User not logged in, redirecting to login.');
+        window.location.href = '/login';
       }
     };
 
@@ -276,7 +278,7 @@ const StudentEvents = () => {
       const res = await axios.get('/api/student/events/all');
       setEvents(res.data || []);
     } catch (error) {
-      if (error.response?.status === 401) throw new Error("Not authenticated");
+      if (error.response?.status === 401) throw new Error('Not authenticated');
       console.error('Failed to fetch events:', error);
     }
   };
@@ -287,7 +289,7 @@ const StudentEvents = () => {
       const registeredIds = res.data.map((e) => e.event_id || e.id);
       setRegisteredEvents(registeredIds);
     } catch (error) {
-      if (error.response?.status === 401) throw new Error("Not authenticated");
+      if (error.response?.status === 401) throw new Error('Not authenticated');
       console.error('Failed to fetch registered events:', error);
     }
   };
@@ -295,21 +297,21 @@ const StudentEvents = () => {
   const handleRegister = async (eventId) => {
     try {
       await axios.post(`/api/student/register/${eventId}`);
-      alert("✅ Registration successful!");
+      toast.success('✅ Registration successful!');
       setRegisteredEvents((prev) => [...prev, eventId]);
       setTimeout(fetchRegisteredEvents, 1000);
     } catch (error) {
       if ([401, 403].includes(error.response?.status)) {
-        sessionStorage.setItem("registerAfterLogin", eventId.toString());
-        window.location.href = "/login";
+        sessionStorage.setItem('registerAfterLogin', eventId.toString());
+        window.location.href = '/login';
       } else if (error.response?.status === 400) {
         if (!registeredEvents.includes(eventId)) {
-          alert("ℹ You are already registered for this event.");
+          toast('ℹ You are already registered for this event.', { icon: 'ℹ️' });
         }
         setRegisteredEvents((prev) => [...new Set([...prev, eventId])]);
       } else {
-        console.error("❌ Registration failed:", error);
-        alert("❌ Something went wrong. Please try again.");
+        console.error('❌ Registration failed:', error);
+        toast.error('❌ Something went wrong. Please try again.');
       }
     }
   };
@@ -319,9 +321,9 @@ const StudentEvents = () => {
 
   const filteredEventsByTab = {
     all: events,
-    upcoming: events.filter(e => !isPast(e.date)),
-    past: events.filter(e => isPast(e.date)),
-    registered: events.filter(e => registeredEvents.includes(e.id)),
+    upcoming: events.filter((e) => !isPast(e.date)),
+    past: events.filter((e) => isPast(e.date)),
+    registered: events.filter((e) => registeredEvents.includes(e.id)),
   };
 
   const filteredEvents = filteredEventsByTab[selectedTab].filter((event) =>
@@ -332,10 +334,14 @@ const StudentEvents = () => {
 
   const getSectionTitle = () => {
     switch (selectedTab) {
-      case 'upcoming': return 'Upcoming Events';
-      case 'past': return 'Past Events';
-      case 'registered': return 'Your Registered Events';
-      default: return 'All Events';
+      case 'upcoming':
+        return 'Upcoming Events';
+      case 'past':
+        return 'Past Events';
+      case 'registered':
+        return 'Your Registered Events';
+      default:
+        return 'All Events';
     }
   };
 
@@ -350,13 +356,20 @@ const StudentEvents = () => {
         onClick={() => setSelectedEvent(event)}
       >
         {event.poster && (
-          <img src={event.poster} alt="Poster" className="rounded mb-2 w-full max-h-48 object-contain" />
+          <img
+            src={event.poster}
+            alt="Poster"
+            className="rounded mb-2 w-full max-h-48 object-contain"
+          />
         )}
         <h3 className="text-lg font-bold">{event.title}</h3>
         <p className="text-sm text-gray-600">
           📅 {new Date(event.date).toLocaleDateString()} | 🕒{' '}
           {event.time
-            ? new Date(`1970-01-01T${event.time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            ? new Date(`1970-01-01T${event.time}`).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
             : 'N/A'}
         </p>
         <p>📍 {event.location}</p>
@@ -375,7 +388,11 @@ const StudentEvents = () => {
               : 'bg-blue-600 hover:bg-blue-700'
           }`}
         >
-          {isPastEvent ? 'Registration Closed' : isRegistered ? 'Registered' : 'Register'}
+          {isPastEvent
+            ? 'Registration Closed'
+            : isRegistered
+            ? 'Registered'
+            : 'Register'}
         </button>
       </div>
     );
@@ -383,6 +400,7 @@ const StudentEvents = () => {
 
   return (
     <div>
+      <Toaster position="top-right" reverseOrder={false} />
       {/* <Navbar /> */}
 
       {/* Header */}
@@ -404,12 +422,14 @@ const StudentEvents = () => {
 
       {/* Tabs */}
       <div className="flex justify-center my-6 gap-2 flex-wrap">
-        {['all', 'upcoming', 'past', 'registered'].map(tab => (
+        {['all', 'upcoming', 'past', 'registered'].map((tab) => (
           <button
             key={tab}
             onClick={() => setSelectedTab(tab)}
             className={`px-4 py-2 rounded-full border ${
-              selectedTab === tab ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'
+              selectedTab === tab
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-100 text-gray-700'
             }`}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)} Events
@@ -420,12 +440,12 @@ const StudentEvents = () => {
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 mb-16">
         {filteredEvents.length > 0 ? (
-          filteredEvents.map(event => renderEventCard(event))
+          filteredEvents.map((event) => renderEventCard(event))
         ) : (
           <p className="text-center col-span-full text-gray-500">
             {events.length === 0
-              ? "🔒 Please log in to view events."
-              : "No matching events found."}
+              ? '🔒 Please log in to view events.'
+              : 'No matching events found.'}
           </p>
         )}
       </div>
@@ -441,7 +461,11 @@ const StudentEvents = () => {
               ✕
             </button>
             {selectedEvent.poster && (
-              <img src={selectedEvent.poster} alt="Poster" className="rounded mb-4 max-h-60 object-contain mx-auto" />
+              <img
+                src={selectedEvent.poster}
+                alt="Poster"
+                className="rounded mb-4 max-h-60 object-contain mx-auto"
+              />
             )}
             <h2 className="text-xl font-bold mb-2">{selectedEvent.title}</h2>
             <p>
@@ -455,15 +479,15 @@ const StudentEvents = () => {
             </p>
             <p>📍 {selectedEvent.location}</p>
             <p>🎓 {selectedEvent.club_name}</p>
-            <div className="mt-3 text-gray-700 whitespace-pre-line">{selectedEvent.description}</div>
+            <div className="mt-3 text-gray-700 whitespace-pre-line">
+              {selectedEvent.description}
+            </div>
           </div>
         </div>
       )}
 
       {/* Footer */}
-      <footer className="bg-purple-800 text-white py-8 text-center">
-        <p>&copy; {new Date().getFullYear()} Student Events Portal. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 };

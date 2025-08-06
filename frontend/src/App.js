@@ -9,7 +9,7 @@ import Signup from './components/Signup';
 import Event from './components/event';
 import StudentEvents from './components/StudentEvents';
 import ForgetPassword from './components/ForgotPassword';
-import ResetPassword from './components/ResetPassword';
+//import ResetPassword from './components/ResetPassword';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -42,7 +42,7 @@ function App() {
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/club" element={<Club />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        {/* <Route path="/reset-password/:token" element={<ResetPassword />} /> */}
         <Route
           path="/event"
           element={
