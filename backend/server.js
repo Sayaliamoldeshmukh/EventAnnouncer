@@ -31,7 +31,7 @@ app.use(express.json());
 // ✅ MySQL session store setup (Updated for Railway)
 const sessionStore = new MySQLStore({
   host: process.env.host || 'metro.proxy.rlwy.net',
-  port: process.env.port || 23383, // ✅ Railway port
+  port: process.env.port || 44571, // ✅ Railway port
   user: process.env.user || 'root',
   password: process.env.password || '',
   database: process.env.database || 'railway',
