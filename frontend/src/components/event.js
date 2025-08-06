@@ -273,7 +273,6 @@
 // export default Event;
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-//import Navbar from '../components/navbar';
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
@@ -436,7 +435,6 @@ const Event = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
-      {/* <Navbar /> */}
       <header className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-20 overflow-hidden text-center">
         {Array.from({ length: 25 }).map((_, index) => (
           <img
