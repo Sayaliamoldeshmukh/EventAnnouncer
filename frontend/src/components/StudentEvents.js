@@ -383,7 +383,7 @@ const StudentEvents = () => {
 
   return (
     <div>
-      <Navbar />
+      {/* <Navbar /> */}
 
       {/* Header */}
       <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-20 text-center">
