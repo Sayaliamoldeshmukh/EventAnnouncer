@@ -8,7 +8,7 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import Event from './components/event';
 import StudentEvents from './components/StudentEvents';
-import Header from './components/header';
+//import Header from './components/header';
 import ForgetPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 
@@ -28,7 +28,7 @@ function App() {
 
   return (
     <Router>
-      <Header user={user} setUser={setUser} />
+      {/* <Header user={user} setUser={setUser} /> */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
