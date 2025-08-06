@@ -8,23 +8,30 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import Event from './components/event';
 import StudentEvents from './components/StudentEvents';
-//import Header from './components/header';
 import ForgetPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
 
-  // ✅ Restore session on page refresh
+  // ✅ Restore session on refresh
   useEffect(() => {
-    axios.get('/api/auth/check', { withCredentials: true })
-      .then(res => {
+    axios
+      .get('/api/auth/check', { withCredentials: true })
+      .then((res) => {
         setUser(res.data.user);
       })
       .catch(() => {
-        setUser(null); // not logged in
+        setUser(null); // Not logged in
+      })
+      .finally(() => {
+        setLoading(false); // Done loading
       });
   }, []);
+
+  // ✅ Wait until session check is done before rendering
+  if (loading) return <div>Loading...</div>;
 
   return (
     <Router>
