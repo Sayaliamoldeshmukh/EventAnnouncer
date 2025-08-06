@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast'; // ✅ Toast UI
 import Navbar from './components/navbar';
 import Home from './HomePage';
 import Club from './components/club';
@@ -9,13 +10,13 @@ import Signup from './components/Signup';
 import Event from './components/event';
 import StudentEvents from './components/StudentEvents';
 import ForgetPassword from './components/ForgotPassword';
-//import ResetPassword from './components/ResetPassword';
+// import ResetPassword from './components/ResetPassword';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Restore session on refresh
+  // ✅ Check for existing session on page load
   useEffect(() => {
     axios
       .get('/api/auth/check', { withCredentials: true })
@@ -23,19 +24,19 @@ function App() {
         setUser(res.data.user);
       })
       .catch(() => {
-        setUser(null); // Not logged in
+        setUser(null);
       })
       .finally(() => {
-        setLoading(false); // Done loading
+        setLoading(false);
       });
   }, []);
 
-  // ✅ Wait until session check is done before rendering
   if (loading) return <div>Loading...</div>;
 
   return (
     <Router>
       <Navbar user={user} setUser={setUser} />
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} /> {/* ✅ Toast UI */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
