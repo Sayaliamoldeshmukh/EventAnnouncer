@@ -1,12 +1,67 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const db = require('../db'); // mysql2/promise connection
+const db = require('../db');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
+// Setup Email Transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
-// ===== SIGNUP =====
+// OTP Generator
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+// ===================== EMAIL VERIFICATION FOR SIGNUP =====================
+router.post('/send-otp', async (req, res) => {
+  const { email } = req.body;
+
+  const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+  if (existing.length > 0) {
+    return res.status(400).json({ message: 'Email already registered' });
+  }
+
+  const otp = generateOTP();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+  await db.query('INSERT INTO email_otps (email, otp, expires_at) VALUES (?, ?, ?)', [email, otp, expiresAt]);
+
+  const html = `
+    <div style="font-family: Arial; text-align: center;">
+      <h2 style="color: #6B46C1;">Campus Events Email Verification</h2>
+      <p>Use the OTP below to verify your email:</p>
+      <h1 style="letter-spacing: 6px;">${otp}</h1>
+      <p>This OTP is valid for <strong>15 minutes</strong>.</p>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    to: email,
+    subject: 'Verify Your Email - OTP Inside',
+    html,
+  });
+
+  res.json({ message: 'OTP sent to your email. Check inbox/spam.' });
+});
+
+router.post('/verify-otp', async (req, res) => {
+  const { email, otp } = req.body;
+
+  const [rows] = await db.query('SELECT * FROM email_otps WHERE email = ? AND otp = ?', [email, otp]);
+  if (rows.length === 0 || new Date(rows[0].expires_at) < new Date()) {
+    return res.status(400).json({ message: 'Invalid or expired OTP' });
+  }
+
+  await db.query('DELETE FROM email_otps WHERE email = ?', [email]);
+  res.json({ message: 'Email verified successfully' });
+});
+
+// ===================== SIGNUP =====================
 router.post('/signup', async (req, res) => {
   const { name, email, password, phone, department, role, club_name } = req.body;
 
@@ -14,42 +69,40 @@ router.post('/signup', async (req, res) => {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
-  try {
-    const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
-    if (existing.length > 0) {
-      return res.status(400).json({ message: 'Email already registered' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await db.query(
-      `INSERT INTO users (name, email, password, phone, department, role, club_name)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, hashedPassword, phone, department, role, club_name || null]
-    );
-
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (error) {
-    console.error('❌ Signup error:', error.message);
-    res.status(500).json({ message: 'Signup failed. Server error.' });
+  // Confirm that email was verified
+  const [otpCheck] = await db.query('SELECT * FROM email_otps WHERE email = ?', [email]);
+  if (otpCheck.length > 0) {
+    return res.status(400).json({ message: 'Please verify email before signing up.' });
   }
+
+  const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+  if (existing.length > 0) {
+    return res.status(400).json({ message: 'Email already registered' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  await db.query(
+    `INSERT INTO users (name, email, password, phone, department, role, club_name)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [name, email, hashedPassword, phone, department, role, club_name || null]
+  );
+
+  res.status(201).json({ message: 'User registered successfully' });
 });
 
-// ===== LOGIN =====
+// ===================== LOGIN =====================
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-   if (rows.length === 0) return res.status(401).json({ message: 'Invalid email' });
-
+    if (rows.length === 0) return res.status(401).json({ message: 'Invalid email' });
 
     const user = rows[0];
     const isMatch = await bcrypt.compare(password, user.password);
-   if (!isMatch) return res.status(401).json({ message: 'Wrong password' });
+    if (!isMatch) return res.status(401).json({ message: 'Wrong password' });
 
-
-    // ✅ Store session
     req.session.user = {
       id: user.id,
       name: user.name,
@@ -64,7 +117,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// ===== WHOAMI (Debug/Session Check) =====
+// ===================== WHOAMI + CHECK =====================
 router.get('/whoami', (req, res) => {
   if (req.session.user) {
     res.json(req.session.user);
@@ -72,7 +125,7 @@ router.get('/whoami', (req, res) => {
     res.status(401).json({ message: 'Not logged in' });
   }
 });
-// routes/auth.js
+
 router.get('/check', (req, res) => {
   if (req.session.user) {
     res.json({ loggedIn: true, user: req.session.user });
@@ -81,83 +134,70 @@ router.get('/check', (req, res) => {
   }
 });
 
-// ===== LOGOUT =====
+// ===================== LOGOUT =====================
 router.post('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) {
       console.error('❌ Logout error:', err);
       return res.status(500).json({ message: 'Logout failed' });
     }
-    res.clearCookie('connect.sid'); // ✅ correct cookie name
+    res.clearCookie('connect.sid');
     res.json({ message: 'Logged out successfully' });
   });
 });
-// Step 1: Send Reset Link
-// Setup transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
 
+// ===================== FORGOT PASSWORD (OTP) =====================
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
 
-  // Check if user exists
   const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
   if (users.length === 0) {
     return res.status(404).json({ message: 'You are not signed up. Please register first.' });
   }
 
-  // Generate secure token
-  const token = crypto.randomBytes(32).toString('hex');
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+  const otp = generateOTP();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-  // Store in password_resets table
   await db.query(
-    'INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)',
-    [email, token, expiresAt]
+    'INSERT INTO password_otps (email, otp, expires_at) VALUES (?, ?, ?)',
+    [email, otp, expiresAt]
   );
 
-  // Create reset link
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+  const emailHTML = `
+    <div style="font-family: Arial; text-align: center;">
+      <h2 style="color: #6B46C1;">🔐 Event Announcer Password Reset</h2>
+      <p>Use the OTP below to reset your password:</p>
+      <h1 style="letter-spacing: 6px;">${otp}</h1>
+      <p>This OTP is valid for <strong>15 minutes</strong>.</p>
+    </div>
+  `;
 
-  // Send email
   await transporter.sendMail({
     to: email,
-    subject: '🔐 Reset Your Password',
-    html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link expires in 15 minutes.</p>`,
+    subject: '🔐 Reset Your Password - OTP Inside',
+    html: emailHTML,
   });
 
-  res.json({ message: 'Reset link sent to your email.Check your spam or inbox' });
+  res.json({ message: 'OTP sent to your email. Check inbox/spam.' });
 });
 
-// Step 2: Reset Password using Token
-router.post('/reset-password/:token', async (req, res) => {
-  const { token } = req.params;
-  const { newPassword } = req.body;
+// ===================== RESET PASSWORD WITH OTP =====================
+router.post('/reset-password-with-otp', async (req, res) => {
+  const { email, otp, newPassword } = req.body;
 
-  // Check token validity
-  const [rows] = await db.query('SELECT * FROM password_resets WHERE token = ?', [token]);
+  const [rows] = await db.query(
+    'SELECT * FROM password_otps WHERE email = ? AND otp = ?',
+    [email, otp]
+  );
   if (rows.length === 0 || new Date(rows[0].expires_at) < new Date()) {
-    return res.status(400).json({ message: 'Invalid or expired token.' });
+    return res.status(400).json({ message: 'Invalid or expired OTP.' });
   }
 
-  const email = rows[0].email;
-
-  // Hash new password
   const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-  // Update user's password
   await db.query('UPDATE users SET password = ? WHERE email = ?', [hashedPassword, email]);
-
-  // Delete used token
-  await db.query('DELETE FROM password_resets WHERE token = ?', [token]);
+  await db.query('DELETE FROM password_otps WHERE email = ?', [email]);
 
   res.json({ message: '✅ Password successfully reset.' });
 });
-
 
 module.exports = router;
