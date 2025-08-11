@@ -3,30 +3,31 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-export default function PendingRequests({ clubId }) {
+export default function PendingRequests() {
   const [requests, setRequests] = useState([]);
 
   const fetchRequests = async () => {
-  try {
-    const res = await axios.get(`/api/join/pending-requests/${clubId}`);
-    setRequests(res.data);
-  } catch (err) {
-    toast.error("Failed to load requests");
-  }
-};
+    try {
+      const res = await axios.get(`/api/join/pending-requests`, { withCredentials: true });
+      setRequests(res.data);
+    } catch (err) {
+      toast.error("Failed to load requests");
+    }
+  };
 
-const handleAction = async (requestId, status) => {
-  try {
-    const res = await axios.post('/api/join/update-request', {
-      request_id: requestId,
-      status
-    });
-    toast.success(res.data.message);
-    fetchRequests();
-  } catch (err) {
-    toast.error("Action failed");
-  }
-};
+  const handleAction = async (requestId, status) => {
+    try {
+      const res = await axios.post(
+        '/api/join/update-request',
+        { request_id: requestId, status },
+        { withCredentials: true }
+      );
+      toast.success(res.data.message);
+      fetchRequests();
+    } catch (err) {
+      toast.error("Action failed");
+    }
+  };
 
   useEffect(() => {
     fetchRequests();
@@ -44,7 +45,6 @@ const handleAction = async (requestId, status) => {
             <tr className="bg-gray-200">
               <th className="p-2">Student Name</th>
               <th className="p-2">Email</th>
-              <th className="p-2">PRN</th>
               <th className="p-2">Actions</th>
             </tr>
           </thead>
@@ -53,7 +53,6 @@ const handleAction = async (requestId, status) => {
               <tr key={req.id} className="border-b">
                 <td className="p-2">{req.student_name}</td>
                 <td className="p-2">{req.email}</td>
-                <td className="p-2">{req.prn}</td>
                 <td className="p-2 flex gap-2">
                   <button
                     onClick={() => handleAction(req.id, 'approved')}
