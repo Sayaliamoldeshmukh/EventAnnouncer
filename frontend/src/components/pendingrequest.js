@@ -7,26 +7,26 @@ export default function PendingRequests({ clubId }) {
   const [requests, setRequests] = useState([]);
 
   const fetchRequests = async () => {
-    try {
-      const res = await axios.get(`/api/clubs/pending-requests/${clubId}`);
-      setRequests(res.data);
-    } catch (err) {
-      toast.error("Failed to load requests");
-    }
-  };
+  try {
+    const res = await axios.get(`/api/join/pending-requests/${clubId}`);
+    setRequests(res.data);
+  } catch (err) {
+    toast.error("Failed to load requests");
+  }
+};
 
-  const handleAction = async (requestId, status) => {
-    try {
-      const res = await axios.post('/api/clubs/update-request', {
-        request_id: requestId,
-        status
-      });
-      toast.success(res.data.message);
-      fetchRequests();
-    } catch (err) {
-      toast.error("Action failed");
-    }
-  };
+const handleAction = async (requestId, status) => {
+  try {
+    const res = await axios.post('/api/join/update-request', {
+      request_id: requestId,
+      status
+    });
+    toast.success(res.data.message);
+    fetchRequests();
+  } catch (err) {
+    toast.error("Action failed");
+  }
+};
 
   useEffect(() => {
     fetchRequests();
