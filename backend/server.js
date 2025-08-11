@@ -13,7 +13,7 @@ const eventRoutes = require('./routes/events');
 const studentRoutes = require('./routes/student');
 const clubDetailRoutes = require('./routes/club_detail');
 const joinClubRoutes = require('./routes/joinClub');
-const joinRequestRoutes = require('./routes/joinrequest'); // ✅ NEW
+//const joinRequestRoutes = require('./routes/joinrequest'); // ✅ NEW
 const cronRoutes = require('./routes/cron');
 
 const app = express();
@@ -72,7 +72,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/clubs', clubDetailRoutes);
 app.use('/api/join', joinClubRoutes);
-app.use('/api/join-requests', joinRequestRoutes); // ✅ NEW
+//app.use('/api/join-requests', joinRequestRoutes); // ✅ NEW
 app.use('/api/cron', cronRoutes);
 
 // ✅ Dashboard Route
