@@ -41,13 +41,22 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
-        
-        {/* ✅ Pass user to Club so Join button works instantly */}
-        <Route path="/club" element={<Club user={user} />} />
+
+        {/* ✅ Club page shows different UI based on role */}
+        <Route
+          path="/club"
+          element={
+            user?.role === 'club_admin' ? (
+              <PendingRequests user={user} />
+            ) : (
+              <Club user={user} />
+            )
+          }
+        />
 
         <Route path="/forgot-password" element={<ForgetPassword />} />
 
-        {/* ✅ Club Admin Pending Requests */}
+        {/* ✅ Club Admin Pending Requests (direct link) */}
         <Route
           path="/pending-requests"
           element={
