@@ -1,12 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import './club.css';
 import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
+axios.defaults.withCredentials = true;
 
 const Clubs = () => {
   const [clubs, setClubs] = useState([]);
   const [selectedClub, setSelectedClub] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const student = JSON.parse(localStorage.getItem('student')); // ✅ Defined globally
+  const [student, setStudent] = useState(null);
+
+  useEffect(() => {
+    // Load logged-in student from localStorage
+    const stored = localStorage.getItem('student');
+    if (stored) {
+      setStudent(JSON.parse(stored));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchClubs = async () => {
@@ -14,13 +27,6 @@ const Clubs = () => {
         const response = await axios.get('/api/clubs');
         const processed = response.data.map(club => ({
           ...club,
-          name: club.name,
-          logo: club.logo,
-          about: club.about,
-          email: club.contact_email,
-          instagram: club.instagram_link,
-          facultyCoordinator: club.faculty_coordinator,
-          studentHead: club.student_head,
           achievements: Array.isArray(club.achievements)
             ? club.achievements
             : typeof club.achievements === 'string'
@@ -30,29 +36,31 @@ const Clubs = () => {
         setClubs(processed);
       } catch (error) {
         console.error("Error fetching clubs:", error);
+        toast.error("Failed to load clubs");
       }
     };
-
     fetchClubs();
   }, []);
 
-const handleJoinClub = async (clubId) => {
-  try {
-    const res = await axios.post('/api/join', {
-      student_id: student.id,
-      club_id: clubId
-    });
-    alert(res.data.message); // Joined club successfully
-  } catch (err) {
-    if (err.response?.status === 400) {
-      alert(err.response.data.message); // Already joined this club
-    } else {
-      alert("Something went wrong");
+  const handleJoinClub = async (clubId) => {
+    if (!student) {
+      toast.error("Please log in as a student to join a club");
+      return;
     }
-  }
-};
-
-
+    try {
+      const res = await axios.post('/api/join', {
+        student_id: student.id,
+        club_id: clubId
+      });
+      toast.success(res.data.message);
+    } catch (err) {
+      if (err.response?.status === 400) {
+        toast.warning(err.response.data.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
+  };
 
   const filteredClubs = clubs
     .filter(club => club.name?.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -60,6 +68,8 @@ const handleJoinClub = async (clubId) => {
 
   return (
     <div className={`min-h-screen bg-gray-50 ${selectedClub ? 'backdrop-blur-sm' : ''}`}>
+      <ToastContainer position="top-right" autoClose={3000} />
+
       {/* HEADER */}
       <header className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-20 overflow-hidden">
         {Array.from({ length: 25 }).map((_, index) => (
@@ -185,14 +195,13 @@ const handleJoinClub = async (clubId) => {
 
               {/* JOIN BUTTON */}
               <div className="mt-6 flex justify-center">
-                {student && (
+                {student?.role === 'student' && (
                   <button
-  onClick={() => handleJoinClub(selectedClub.id)}
-  className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
->
-  Join Club
-</button>
-
+                    onClick={() => handleJoinClub(selectedClub.id)}
+                    className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
+                  >
+                    Join Club
+                  </button>
                 )}
               </div>
             </div>
