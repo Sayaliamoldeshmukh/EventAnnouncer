@@ -34,24 +34,25 @@ const Clubs = ({ user }) => {
   }, []);
 
   const handleJoinClub = async (clubId) => {
-    if (!user || user.role !== 'student') {
-      toast.error("Please log in as a student to join a club");
-      return;
+  if (!user || user.role !== 'student') {
+    toast.error("Please log in as a student to join a club");
+    return;
+  }
+  try {
+    const res = await axios.post('/api/join/join-request', {
+      student_id: user.id,
+      club_id: clubId
+    });
+    toast.success(res.data.message);
+    setSelectedClub(null);
+  } catch (err) {
+    if (err.response?.status === 400) {
+      toast.warning(err.response.data.message);
+    } else {
+      toast.error("Something went wrong");
     }
-    try {
-      const res = await axios.post('/api/join', {
-        student_id: user.id,
-        club_id: clubId
-      });
-      toast.success(res.data.message);
-    } catch (err) {
-      if (err.response?.status === 400) {
-        toast.warning(err.response.data.message);
-      } else {
-        toast.error("Something went wrong");
-      }
-    }
-  };
+  }
+};
 
   const filteredClubs = clubs
     .filter(club => club.name?.toLowerCase().includes(searchTerm.toLowerCase()))
