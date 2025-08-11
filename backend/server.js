@@ -4,7 +4,7 @@ const MySQLStore = require('express-mysql-session')(session);
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
-require('./cron/emailRemainder'); // ✅ Runs cron job automatically every 15 mins
+require('./cron/emailRemainder');
 
 const db = require('./db');
 const authRoutes = require('./routes/auth');
@@ -13,6 +13,7 @@ const eventRoutes = require('./routes/events');
 const studentRoutes = require('./routes/student');
 const clubDetailRoutes = require('./routes/club_detail');
 const joinClubRoutes = require('./routes/joinClub');
+const joinRequestRoutes = require('./routes/joinRequest'); // ✅ NEW
 const cronRoutes = require('./routes/cron');
 
 const app = express();
@@ -22,18 +23,20 @@ if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
 }
 
-// ✅ Enable CORS
-app.use(cors({
-  origin: 'https://event-announcer1.vercel.app', // <-- Add your frontend domain here
-  credentials: true
-}));
+// ✅ CORS
+app.use(
+  cors({
+    origin: 'https://event-announcer1.vercel.app',
+    credentials: true
+  })
+);
 
 app.use(express.json());
 
-// ✅ MySQL session store setup (Updated for Railway)
+// ✅ MySQL Session Store
 const sessionStore = new MySQLStore({
   host: process.env.host || 'metro.proxy.rlwy.net',
-  port: process.env.port || 44571, // ✅ Railway port
+  port: process.env.port || 44571,
   user: process.env.user || 'root',
   password: process.env.password || '',
   database: process.env.database || 'railway',
@@ -42,22 +45,24 @@ const sessionStore = new MySQLStore({
   expiration: 86400000
 });
 
-// ✅ Use session middleware
-app.use(session({
-  key: 'session_cookie_name',
-  secret: process.env.SESSION_SECRET || 'supersecretkey',
-  store: sessionStore,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'none',
-    maxAge: 1000 * 60 * 60 // 1 hour
-  }
-}));
+// ✅ Session Middleware
+app.use(
+  session({
+    key: 'session_cookie_name',
+    secret: process.env.SESSION_SECRET || 'supersecretkey',
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'none',
+      maxAge: 1000 * 60 * 60
+    }
+  })
+);
 
-// ✅ Serve static uploads
+// ✅ Static Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ✅ API Routes
@@ -67,12 +72,16 @@ app.use('/api/events', eventRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/clubs', clubDetailRoutes);
 app.use('/api/join', joinClubRoutes);
+app.use('/api/join-requests', joinRequestRoutes); // ✅ NEW
 app.use('/api/cron', cronRoutes);
 
-// ✅ Dashboard route
+// ✅ Dashboard Route
 app.get('/api/dashboard', (req, res) => {
   if (req.session.user) {
-    res.json({ message: `Welcome ${req.session.user.name}`, role: req.session.user.role });
+    res.json({
+      message: `Welcome ${req.session.user.name}`,
+      role: req.session.user.role
+    });
   } else {
     res.status(401).json({ message: 'Unauthorized' });
   }
