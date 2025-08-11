@@ -10,7 +10,7 @@ import Signup from './components/Signup';
 import Event from './components/event';
 import StudentEvents from './components/StudentEvents';
 import ForgetPassword from './components/ForgotPassword';
-import PendingRequests from './components/pendingrequests';
+import PendingRequests from './components/pendingrequest';
 
 function App() {
   const [user, setUser] = useState(null);
