@@ -69,11 +69,12 @@ router.get('/pending-requests/:club_id', async (req, res) => {
 
   try {
     const [requests] = await db.query(`
-      SELECT cjr.id, u.name AS student_name, u.email, u.prn, cjr.status, cjr.created_at
-      FROM club_join_requests cjr
-      JOIN users u ON cjr.student_id = u.id
-      WHERE cjr.club_id=? AND cjr.status='pending'
-    `, [club_id]);
+  SELECT cjr.id, u.name AS student_name, u.email, cjr.status, cjr.created_at
+  FROM club_join_requests cjr
+  JOIN users u ON cjr.student_id = u.id
+  WHERE cjr.club_id=? AND cjr.status='pending'
+`, [club_id]);
+
 
     res.json(requests);
   } catch (err) {
