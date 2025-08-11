@@ -13,7 +13,7 @@ const eventRoutes = require('./routes/events');
 const studentRoutes = require('./routes/student');
 const clubDetailRoutes = require('./routes/club_detail');
 const joinClubRoutes = require('./routes/joinClub');
-const joinRequestRoutes = require('./routes/joinRequest'); // ✅ NEW
+const joinRequestRoutes = require('./routes/joinrequest'); // ✅ NEW
 const cronRoutes = require('./routes/cron');
 
 const app = express();
