@@ -11,7 +11,7 @@ const Clubs = () => {
   useEffect(() => {
     const fetchClubs = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/clubs');
+        const response = await axios.get('/api/clubs');
         const processed = response.data.map(club => ({
           ...club,
           name: club.name,
@@ -38,7 +38,7 @@ const Clubs = () => {
 
 const handleJoinClub = async (clubId) => {
   try {
-    const res = await axios.post('http://localhost:5000/api/join', {
+    const res = await axios.post('/api/join', {
       student_id: student.id,
       club_id: clubId
     });
