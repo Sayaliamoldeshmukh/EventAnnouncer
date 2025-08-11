@@ -7,19 +7,10 @@ import 'react-toastify/dist/ReactToastify.css';
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 axios.defaults.withCredentials = true;
 
-const Clubs = () => {
+const Clubs = ({ user }) => {
   const [clubs, setClubs] = useState([]);
   const [selectedClub, setSelectedClub] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [student, setStudent] = useState(null);
-
-  useEffect(() => {
-    // Load logged-in student from localStorage
-    const stored = localStorage.getItem('student');
-    if (stored) {
-      setStudent(JSON.parse(stored));
-    }
-  }, []);
 
   useEffect(() => {
     const fetchClubs = async () => {
@@ -43,13 +34,13 @@ const Clubs = () => {
   }, []);
 
   const handleJoinClub = async (clubId) => {
-    if (!student) {
+    if (!user || user.role !== 'student') {
       toast.error("Please log in as a student to join a club");
       return;
     }
     try {
       const res = await axios.post('/api/join', {
-        student_id: student.id,
+        student_id: user.id,
         club_id: clubId
       });
       toast.success(res.data.message);
@@ -195,7 +186,7 @@ const Clubs = () => {
 
               {/* JOIN BUTTON */}
               <div className="mt-6 flex justify-center">
-                {student?.role === 'student' && (
+                {user?.role === 'student' && (
                   <button
                     onClick={() => handleJoinClub(selectedClub.id)}
                     className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast'; // ✅ Toast UI
+import { Toaster } from 'react-hot-toast';
 import Navbar from './components/navbar';
 import Home from './HomePage';
 import Club from './components/club';
@@ -10,7 +10,7 @@ import Signup from './components/Signup';
 import Event from './components/event';
 import StudentEvents from './components/StudentEvents';
 import ForgetPassword from './components/ForgotPassword';
-// import ResetPassword from './components/ResetPassword';
+import PendingRequests from './components/PendingRequests';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -36,14 +36,29 @@ function App() {
   return (
     <Router>
       <Navbar user={user} setUser={setUser} />
-      <Toaster position="top-right" toastOptions={{ duration: 3000 }} /> {/* ✅ Toast UI */}
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
-        <Route path="/club" element={<Club />} />
+        
+        {/* ✅ Pass user to Club so Join button works instantly */}
+        <Route path="/club" element={<Club user={user} />} />
+
         <Route path="/forgot-password" element={<ForgetPassword />} />
-        {/* <Route path="/reset-password/:token" element={<ResetPassword />} /> */}
+
+        {/* ✅ Club Admin Pending Requests */}
+        <Route
+          path="/pending-requests"
+          element={
+            user?.role === 'club_admin' ? (
+              <PendingRequests user={user} />
+            ) : (
+              <div className="p-6 text-red-500">Unauthorized</div>
+            )
+          }
+        />
+
         <Route
           path="/event"
           element={
