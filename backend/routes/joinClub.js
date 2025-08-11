@@ -30,7 +30,7 @@ router.post('/join-request', async (req, res) => {
   }
 });
 
-// Club admin views pending requests for their own club
+// Club admin views pending requests
 router.get('/pending-requests', async (req, res) => {
   try {
     const adminId = req.session.user?.id;
