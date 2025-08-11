@@ -16,19 +16,12 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Check for existing session on page load
   useEffect(() => {
     axios
       .get('/api/auth/check', { withCredentials: true })
-      .then((res) => {
-        setUser(res.data.user);
-      })
-      .catch(() => {
-        setUser(null);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      .then((res) => setUser(res.data.user))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div>Loading...</div>;
@@ -42,7 +35,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
 
-        {/* ✅ Club page shows different UI based on role */}
+        {/* ✅ If club admin, show pending requests instead of clubs */}
         <Route
           path="/club"
           element={
@@ -56,7 +49,6 @@ function App() {
 
         <Route path="/forgot-password" element={<ForgetPassword />} />
 
-        {/* ✅ Club Admin Pending Requests (direct link) */}
         <Route
           path="/pending-requests"
           element={
