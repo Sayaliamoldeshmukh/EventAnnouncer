@@ -11,8 +11,8 @@ const authRoutes = require('./routes/auth');
 const clubAdminRoutes = require('./routes/clubAdmin');
 const eventRoutes = require('./routes/events');
 const studentRoutes = require('./routes/student');
-const cronRoutes = require('./routes/cron');
-
+const clubDetailRoutes = require('./routes/club_detail');
+const joinClubRoutes = require('./routes/joinClub');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -64,7 +64,8 @@ app.use('/api/clubAdmin', clubAdminRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/cron', cronRoutes);
-
+app.use('/api/clubs', clubDetailRoutes);
+app.use('/api/join', joinClubRoutes);
 // ✅ Dashboard route
 app.get('/api/dashboard', (req, res) => {
   if (req.session.user) {
