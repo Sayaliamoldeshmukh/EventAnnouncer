@@ -13,6 +13,8 @@ const eventRoutes = require('./routes/events');
 const studentRoutes = require('./routes/student');
 const clubDetailRoutes = require('./routes/club_detail');
 const joinClubRoutes = require('./routes/joinClub');
+const cronRoutes = require('./routes/cron');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -63,9 +65,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/clubAdmin', clubAdminRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/student', studentRoutes);
-app.use('/api/cron', cronRoutes);
 app.use('/api/clubs', clubDetailRoutes);
 app.use('/api/join', joinClubRoutes);
+app.use('/api/cron', cronRoutes);
+
 // ✅ Dashboard route
 app.get('/api/dashboard', (req, res) => {
   if (req.session.user) {
