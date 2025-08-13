@@ -10,10 +10,10 @@ import Signup from './components/Signup';
 import Event from './components/event';
 import StudentEvents from './components/StudentEvents';
 import ForgetPassword from './components/ForgotPassword';
-import PendingRequests from './components/pendingrequest';
 
-// ✅ NEW: Admin Dashboard
-import AdminDashboard from './components/admindashboard';
+// ✅ Import main club dashboard instead of pending only
+import ClubDashboard from './components/ClubDashboard';
+import AdminDashboard from './components/admindashboard'; 
 
 function App() {
   const [user, setUser] = useState(null);
@@ -37,54 +37,35 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
+        <Route path="/forgot-password" element={<ForgetPassword />} />
 
-        {/* ✅ Club page logic */}
+        {/* ✅ Club route now loads full dashboard for admins */}
         <Route
           path="/club"
           element={
-            user?.role === 'club_admin' ? (
-              <PendingRequests user={user} />
-            ) : (
-              <Club user={user} />
-            )
+            user?.role === 'club_admin'
+              ? <ClubDashboard user={user} />
+              : <Club user={user} />
           }
         />
 
-        <Route path="/forgot-password" element={<ForgetPassword />} />
-
-        {/* ✅ Pending Requests page */}
-        <Route
-          path="/pending-requests"
-          element={
-            user?.role === 'club_admin' ? (
-              <PendingRequests user={user} />
-            ) : (
-              <div className="p-6 text-red-500">Unauthorized</div>
-            )
-          }
-        />
-
-        {/* ✅ Events page */}
+        {/* ✅ Event route */}
         <Route
           path="/event"
           element={
-            user?.role === 'club_admin' ? (
-              <Event user={user} />
-            ) : (
-              <StudentEvents user={user} />
-            )
+            user?.role === 'club_admin'
+              ? <Event user={user} />
+              : <StudentEvents user={user} />
           }
         />
 
-        {/* ✅ NEW: Admin Dashboard Route */}
+        {/* ✅ Admin Dashboard */}
         <Route
           path="/admin-dashboard"
           element={
-            user?.role === 'club_admin' ? (
-              <AdminDashboard user={user} />
-            ) : (
-              <div className="p-6 text-red-500">Unauthorized</div>
-            )
+            user?.role === 'club_admin'
+              ? <AdminDashboard user={user} />
+              : <div className="p-6 text-red-500">Unauthorized</div>
           }
         />
       </Routes>
