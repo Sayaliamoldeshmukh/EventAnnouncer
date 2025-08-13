@@ -353,6 +353,7 @@ export default function ClubDashboard() {
     totalMembers: 0,
     pendingRequests: 0,
     activeEvents: 0,
+    upcomingEvents: []
   });
 
   const fetchStats = async () => {
@@ -463,7 +464,7 @@ function DashboardContent({ stats }) {
         <StatCard
           title="Active Events"
           value={stats.activeEvents}
-          change="3 upcoming this month"
+          change={`${stats.activeEvents} upcoming this month`}
           icon={<Calendar className="text-purple-500" />}
         />
         <StatCard
@@ -472,6 +473,33 @@ function DashboardContent({ stats }) {
           change="+3% from last month"
           icon={<TrendingUp className="text-purple-500" />}
         />
+      </div>
+
+      {/* Upcoming Events List */}
+      <div className="bg-white rounded-xl shadow p-4">
+        <h3 className="text-lg font-bold text-purple-600 mb-3">
+          Upcoming Events
+        </h3>
+        {stats.upcomingEvents && stats.upcomingEvents.length > 0 ? (
+          <ul className="space-y-2">
+            {stats.upcomingEvents.map((event) => (
+              <li
+                key={event.id}
+                className="p-3 border rounded-lg flex justify-between items-center"
+              >
+                <div>
+                  <p className="font-medium">{event.title}</p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(event.date).toLocaleDateString()} —{" "}
+                    {event.location}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500 text-sm">No upcoming events.</p>
+        )}
       </div>
     </>
   );
@@ -489,4 +517,5 @@ function StatCard({ title, value, change, icon }) {
     </div>
   );
 }
+
 
