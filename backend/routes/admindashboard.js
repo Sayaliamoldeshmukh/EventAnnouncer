@@ -25,15 +25,15 @@ router.get('/dashboard/stats', async (req, res) => {
 
         const clubId = club.id;
 
-        // 2. Total approved members from club_join_requests
+        // 2. Total approved members from joined_clubs (real membership table)
         const [[membersResult]] = await db.query(
             `SELECT COUNT(*) AS total_members 
-             FROM club_join_requests 
+             FROM joined_clubs 
              WHERE club_id = ? AND status = 'approved'`,
             [clubId]
         );
 
-        // 3. Pending join requests
+        // 3. Pending join requests from club_join_requests
         const [[pendingResult]] = await db.query(
             `SELECT COUNT(*) AS pending_requests 
              FROM club_join_requests 
@@ -41,7 +41,7 @@ router.get('/dashboard/stats', async (req, res) => {
             [clubId]
         );
 
-        // 4. Active events count
+        // 4. Active events count (events table: club_id = id column, date >= today)
         const [[activeEventsResult]] = await db.query(
             `SELECT COUNT(*) AS active_events 
              FROM events 
@@ -59,7 +59,6 @@ router.get('/dashboard/stats', async (req, res) => {
             [clubId]
         );
 
-        // ✅ Send everything in one response
         res.json({
             totalMembers: membersResult.total_members,
             pendingRequests: pendingResult.pending_requests,
@@ -96,7 +95,7 @@ router.get('/dashboard/pending-requests', async (req, res) => {
 
         const clubId = club.id;
 
-        // Get pending requests with name, department from users
+        // Get pending requests with user details
         const [pendingRequests] = await db.query(
             `SELECT r.id, u.name, u.department, r.reason, r.year
              FROM club_join_requests r
