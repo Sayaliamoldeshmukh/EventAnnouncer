@@ -1,77 +1,3 @@
-const express = require('express');
-const router = express.Router();
-const db = require('../db'); // MySQL connection
-
-// GET dashboard stats for a specific club admin
-router.get('/dashboard/stats', async (req, res) => {
-    try {
-        const adminId = req.session.user?.id; // Logged-in admin ID
-        if (!adminId) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
-
-        // 1. Get club_id for this admin
-        const [[club]] = await db.query(
-            `SELECT c.id 
-             FROM clubs c 
-             JOIN users u ON c.name = u.club_name 
-             WHERE u.id = ?`,
-            [adminId]
-        );
-
-        if (!club) {
-            return res.status(404).json({ message: 'Club not found for this admin.' });
-        }
-
-        const clubId = club.id;
-
-        // 2. Total approved members from joined_clubs (real membership table)
-        const [[membersResult]] = await db.query(
-            `SELECT COUNT(*) AS total_members 
-             FROM joined_clubs 
-             WHERE club_id = ? AND status = 'approved'`,
-            [clubId]
-        );
-
-        // 3. Pending join requests from club_join_requests
-        const [[pendingResult]] = await db.query(
-            `SELECT COUNT(*) AS pending_requests 
-             FROM club_join_requests 
-             WHERE club_id = ? AND status = 'pending'`,
-            [clubId]
-        );
-
-        // 4. Active events count (events table: club_id = id column, date >= today)
-        const [[activeEventsResult]] = await db.query(
-            `SELECT COUNT(*) AS active_events 
-             FROM events 
-             WHERE club_id = ? AND date >= CURDATE()`,
-            [clubId]
-        );
-
-        // 5. Upcoming events (next 5)
-        const [upcomingEvents] = await db.query(
-            `SELECT id, title, date, location 
-             FROM events 
-             WHERE club_id = ? AND date >= CURDATE() 
-             ORDER BY date ASC 
-             LIMIT 5`,
-            [clubId]
-        );
-
-        res.json({
-            totalMembers: membersResult.total_members,
-            pendingRequests: pendingResult.pending_requests,
-            activeEvents: activeEventsResult.active_events,
-            upcomingEvents
-        });
-
-    } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
-
 // GET pending join requests with user details
 router.get('/dashboard/pending-requests', async (req, res) => {
     try {
@@ -95,9 +21,9 @@ router.get('/dashboard/pending-requests', async (req, res) => {
 
         const clubId = club.id;
 
-        // Get pending requests with user details
+        // Get pending requests with name, email, department from users, and reason/year from club_join_requests
         const [pendingRequests] = await db.query(
-            `SELECT r.id, u.name, u.department, r.reason, r.year
+            `SELECT r.id, u.name, u.email, u.department, r.reason, r.year
              FROM club_join_requests r
              JOIN users u ON r.user_id = u.id
              WHERE r.club_id = ? AND r.status = 'pending'`,
@@ -111,5 +37,3 @@ router.get('/dashboard/pending-requests', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-
-module.exports = router;
