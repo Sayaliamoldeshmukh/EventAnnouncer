@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db'); // MySQL connection
 
-// GET dashboard data for a specific club admin
-router.get('/dashboard', async (req, res) => {
+// GET dashboard stats for a specific club admin
+router.get('/dashboard/stats', async (req, res) => {
     try {
         const adminId = req.session.user?.id; // Logged-in admin ID
         if (!adminId) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        // 1. Get the club_id for the logged-in admin
+        // 1. Get club_id for this admin
         const [[club]] = await db.query(
             `SELECT c.id 
              FROM clubs c 
@@ -49,7 +49,7 @@ router.get('/dashboard', async (req, res) => {
             [clubId]
         );
 
-        // 5. Upcoming events list (next 5)
+        // 5. Upcoming events (next 5)
         const [upcomingEvents] = await db.query(
             `SELECT id, title, date, location 
              FROM events 
@@ -59,12 +59,12 @@ router.get('/dashboard', async (req, res) => {
             [clubId]
         );
 
-        // 6. Send final response
+        // ✅ Send everything in one response
         res.json({
-            total_members: membersResult[0].total_members,
-            pending_requests: pendingResult[0].pending_requests,
-            active_events: activeEventsResult[0].active_events,
-            upcoming_events: upcomingEvents
+            totalMembers: membersResult[0].total_members,
+            pendingRequests: pendingResult[0].pending_requests,
+            activeEvents: activeEventsResult[0].active_events,
+            upcomingEvents
         });
 
     } catch (error) {
