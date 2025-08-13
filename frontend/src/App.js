@@ -12,7 +12,7 @@ import StudentEvents from './components/StudentEvents';
 import ForgetPassword from './components/ForgotPassword';
 
 // ✅ Import main club dashboard instead of pending only
-import ClubDashboard from './components/ClubDashboard';
+//import ClubDashboard from './components/ClubDashboard';
 import AdminDashboard from './components/admindashboard'; 
 
 function App() {
@@ -44,7 +44,7 @@ function App() {
           path="/club"
           element={
             user?.role === 'club_admin'
-              ? <ClubDashboard user={user} />
+              ? <AdminDashboard user={user} />
               : <Club user={user} />
           }
         />
