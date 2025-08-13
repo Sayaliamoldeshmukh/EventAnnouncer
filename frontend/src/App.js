@@ -12,6 +12,9 @@ import StudentEvents from './components/StudentEvents';
 import ForgetPassword from './components/ForgotPassword';
 import PendingRequests from './components/pendingrequest';
 
+// ✅ NEW: Admin Dashboard
+import AdminDashboard from './components/admindashboard';
+
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +38,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
 
-        {/* ✅ If club admin, show pending requests instead of clubs */}
+        {/* ✅ Club page logic */}
         <Route
           path="/club"
           element={
@@ -49,6 +52,7 @@ function App() {
 
         <Route path="/forgot-password" element={<ForgetPassword />} />
 
+        {/* ✅ Pending Requests page */}
         <Route
           path="/pending-requests"
           element={
@@ -60,6 +64,7 @@ function App() {
           }
         />
 
+        {/* ✅ Events page */}
         <Route
           path="/event"
           element={
@@ -67,6 +72,18 @@ function App() {
               <Event user={user} />
             ) : (
               <StudentEvents user={user} />
+            )
+          }
+        />
+
+        {/* ✅ NEW: Admin Dashboard Route */}
+        <Route
+          path="/admin-dashboard"
+          element={
+            user?.role === 'club_admin' ? (
+              <AdminDashboard user={user} />
+            ) : (
+              <div className="p-6 text-red-500">Unauthorized</div>
             )
           }
         />
