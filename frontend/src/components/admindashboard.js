@@ -82,7 +82,7 @@
 // ClubDashboard.js
 import React, { useState } from "react";
 import { Users, Clock, Calendar, TrendingUp } from "lucide-react";
-import PendingRequests from "./components/pendingrequests"; // import your pending requests component
+import PendingRequests from "./components/pendingrequest"; // import your pending requests component
 
 export default function ClubDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
