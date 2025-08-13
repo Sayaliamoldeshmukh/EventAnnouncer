@@ -13,8 +13,10 @@ const eventRoutes = require('./routes/events');
 const studentRoutes = require('./routes/student');
 const clubDetailRoutes = require('./routes/club_detail');
 const joinClubRoutes = require('./routes/joinClub');
-//const joinRequestRoutes = require('./routes/joinrequest'); // ✅ NEW
 const cronRoutes = require('./routes/cron');
+
+// ✅ NEW: Admin Dashboard Route
+const adminDashboardRoutes = require('./routes/admindashboard');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -72,8 +74,10 @@ app.use('/api/events', eventRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/clubs', clubDetailRoutes);
 app.use('/api/join', joinClubRoutes);
-//app.use('/api/join-requests', joinRequestRoutes); // ✅ NEW
 app.use('/api/cron', cronRoutes);
+
+// ✅ NEW: Admin Dashboard API
+app.use('/api/admin-dashboard', adminDashboardRoutes);
 
 // ✅ Dashboard Route
 app.get('/api/dashboard', (req, res) => {
