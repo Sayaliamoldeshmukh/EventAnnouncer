@@ -92,9 +92,14 @@ const router = express.Router();
 const db = require('../db');
 
 // Student sends join request
+// Student sends join request
 router.post('/join-request', async (req, res) => {
-  const { student_id, club_id } = req.body;
+  const { student_id, club_id, year, reason } = req.body;
   try {
+    if (!student_id || !club_id || !year || !reason) {
+      return res.status(400).json({ message: 'All fields are required.' });
+    }
+
     const [exists] = await db.query(
       "SELECT * FROM club_join_requests WHERE student_id=? AND club_id=? AND status='pending'",
       [student_id, club_id]
@@ -108,11 +113,38 @@ router.post('/join-request', async (req, res) => {
     if (joined.length > 0) return res.status(400).json({ message: 'You are already a member of this club.' });
 
     await db.query(
-      "INSERT INTO club_join_requests (student_id, club_id) VALUES (?, ?)",
-      [student_id, club_id]
+      "INSERT INTO club_join_requests (student_id, club_id, year, reason) VALUES (?, ?, ?, ?)",
+      [student_id, club_id, year, reason]
     );
 
     res.status(201).json({ message: 'Join request sent to the club admin.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Club admin views pending requests
+router.get('/pending-requests', async (req, res) => {
+  try {
+    const adminId = req.session.user?.id;
+    if (!adminId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const [[club]] = await db.query(
+      "SELECT c.id FROM clubs c JOIN users u ON c.name = u.club_name WHERE u.id = ?",
+      [adminId]
+    );
+    if (!club) return res.json([]);
+
+    const [requests] = await db.query(`
+      SELECT cjr.id, u.name AS student_name, u.department, cjr.year, cjr.reason,
+             u.email, cjr.status, cjr.created_at
+      FROM club_join_requests cjr
+      JOIN users u ON cjr.student_id = u.id
+      WHERE cjr.club_id=? AND cjr.status='pending'
+    `, [club.id]);
+
+    res.json(requests);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error.' });
