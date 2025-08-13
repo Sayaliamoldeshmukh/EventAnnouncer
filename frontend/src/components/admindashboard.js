@@ -79,10 +79,14 @@
 //     </div>
 //   );
 // }
-import React from "react";
+// ClubDashboard.js
+import React, { useState } from "react";
 import { Users, Clock, Calendar, TrendingUp } from "lucide-react";
+import PendingRequests from "./components/pendingrequests"; // import your pending requests component
 
 export default function ClubDashboard() {
+  const [activeTab, setActiveTab] = useState("dashboard");
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -91,10 +95,24 @@ export default function ClubDashboard() {
           Tech Club Admin
         </h1>
         <nav className="flex flex-col gap-2">
-          <button className="text-left px-3 py-2 rounded-lg bg-purple-100 text-purple-700 font-medium">
+          <button
+            onClick={() => setActiveTab("dashboard")}
+            className={`text-left px-3 py-2 rounded-lg font-medium ${
+              activeTab === "dashboard"
+                ? "bg-purple-100 text-purple-700"
+                : "hover:bg-gray-100"
+            }`}
+          >
             Dashboard
           </button>
-          <button className="text-left px-3 py-2 rounded-lg hover:bg-gray-100">
+          <button
+            onClick={() => setActiveTab("pendingRequests")}
+            className={`text-left px-3 py-2 rounded-lg font-medium ${
+              activeTab === "pendingRequests"
+                ? "bg-purple-100 text-purple-700"
+                : "hover:bg-gray-100"
+            }`}
+          >
             Membership Requests
           </button>
           <button className="text-left px-3 py-2 rounded-lg hover:bg-gray-100">
@@ -108,77 +126,83 @@ export default function ClubDashboard() {
           </button>
         </nav>
 
-        {/* Stat Cards */}
+        {/* Sidebar Stats */}
         <div className="mt-8 space-y-3">
-          <div className="bg-purple-50 p-3 rounded-lg flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Total Members</p>
-              <p className="text-lg font-bold">147</p>
-            </div>
-            <Users className="text-purple-500" size={20} />
-          </div>
-          <div className="bg-purple-50 p-3 rounded-lg flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Pending Requests</p>
-              <p className="text-lg font-bold">23</p>
-            </div>
-            <Clock className="text-purple-500" size={20} />
-          </div>
-          <div className="bg-purple-50 p-3 rounded-lg flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Active Events</p>
-              <p className="text-lg font-bold">8</p>
-            </div>
-            <Calendar className="text-purple-500" size={20} />
-          </div>
+          <SidebarStat title="Total Members" value="147" icon={<Users className="text-purple-500" size={20} />} />
+          <SidebarStat title="Pending Requests" value="23" icon={<Clock className="text-purple-500" size={20} />} />
+          <SidebarStat title="Active Events" value="8" icon={<Calendar className="text-purple-500" size={20} />} />
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 p-6 overflow-y-auto">
-        {/* Header */}
-        <h2 className="text-2xl font-bold text-purple-600">Club Dashboard</h2>
-        <p className="text-gray-500 mb-6">
-          Overview of your club's performance and member activity
-        </p>
-
-        {/* Big Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <StatCard title="Total Members" value="147" change="+12% from last month" icon={<Users className="text-purple-500" />} />
-          <StatCard title="Pending Requests" value="23" change="+5 this week" icon={<Clock className="text-purple-500" />} />
-          <StatCard title="Active Events" value="8" change="3 upcoming this month" icon={<Calendar className="text-purple-500" />} />
-          <StatCard title="Engagement Rate" value="78%" change="+3% from last month" icon={<TrendingUp className="text-purple-500" />} />
-        </div>
-
-        {/* Activity + Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Recent Member Activity */}
-          <div className="bg-white p-4 rounded-xl shadow">
-            <h3 className="font-bold mb-4">Recent Member Activity</h3>
-            <ul className="space-y-4">
-              <ActivityItem name="Alex Johnson" action="Joined the club" time="2 hours ago" tag="join" />
-              <ActivityItem name="Sarah Chen" action="Attended Tech Workshop" time="1 day ago" tag="event" />
-              <ActivityItem name="Michael Rodriguez" action="Submitted project proposal" time="2 days ago" tag="project" />
-              <ActivityItem name="Emily Davis" action="Joined the club" time="3 days ago" tag="join" />
-            </ul>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="bg-white p-4 rounded-xl shadow md:col-span-2">
-            <h3 className="font-bold mb-4">Quick Stats</h3>
-            <ProgressBar label="Event Attendance Rate" value={85} />
-            <ProgressBar label="Member Retention" value={92} />
-            <ProgressBar label="Project Completion" value={67} />
-          </div>
-        </div>
+        {activeTab === "dashboard" && <DashboardContent />}
+        {activeTab === "pendingRequests" && <PendingRequests />}
       </div>
     </div>
   );
 }
 
-/* ----------------------
+/* ---------------------
+   Sidebar Stat Component
+---------------------- */
+function SidebarStat({ title, value, icon }) {
+  return (
+    <div className="bg-purple-50 p-3 rounded-lg flex items-center justify-between">
+      <div>
+        <p className="text-sm text-gray-500">{title}</p>
+        <p className="text-lg font-bold">{value}</p>
+      </div>
+      {icon}
+    </div>
+  );
+}
+
+/* ---------------------
+   Dashboard Page Content
+---------------------- */
+function DashboardContent() {
+  return (
+    <>
+      <h2 className="text-2xl font-bold text-purple-600">Club Dashboard</h2>
+      <p className="text-gray-500 mb-6">
+        Overview of your club's performance and member activity
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <StatCard title="Total Members" value="147" change="+12% from last month" icon={<Users className="text-purple-500" />} />
+        <StatCard title="Pending Requests" value="23" change="+5 this week" icon={<Clock className="text-purple-500" />} />
+        <StatCard title="Active Events" value="8" change="3 upcoming this month" icon={<Calendar className="text-purple-500" />} />
+        <StatCard title="Engagement Rate" value="78%" change="+3% from last month" icon={<TrendingUp className="text-purple-500" />} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Recent Member Activity */}
+        <div className="bg-white p-4 rounded-xl shadow">
+          <h3 className="font-bold mb-4">Recent Member Activity</h3>
+          <ul className="space-y-4">
+            <ActivityItem name="Alex Johnson" action="Joined the club" time="2 hours ago" tag="join" />
+            <ActivityItem name="Sarah Chen" action="Attended Tech Workshop" time="1 day ago" tag="event" />
+            <ActivityItem name="Michael Rodriguez" action="Submitted project proposal" time="2 days ago" tag="project" />
+            <ActivityItem name="Emily Davis" action="Joined the club" time="3 days ago" tag="join" />
+          </ul>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="bg-white p-4 rounded-xl shadow md:col-span-2">
+          <h3 className="font-bold mb-4">Quick Stats</h3>
+          <ProgressBar label="Event Attendance Rate" value={85} />
+          <ProgressBar label="Member Retention" value={92} />
+          <ProgressBar label="Project Completion" value={67} />
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ---------------------
    Reusable Components
------------------------ */
+---------------------- */
 function StatCard({ title, value, change, icon }) {
   return (
     <div className="bg-white p-4 rounded-xl shadow flex flex-col">
@@ -228,3 +252,4 @@ function ProgressBar({ label, value }) {
     </div>
   );
 }
+
