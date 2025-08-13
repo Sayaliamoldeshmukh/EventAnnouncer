@@ -25,16 +25,16 @@ router.get('/dashboard/stats', async (req, res) => {
 
         const clubId = club.id;
 
-        // 2. Total approved members
-        const [membersResult] = await db.query(
+        // 2. Total approved members from club_join_requests
+        const [[membersResult]] = await db.query(
             `SELECT COUNT(*) AS total_members 
-             FROM joined_clubs 
+             FROM club_join_requests 
              WHERE club_id = ? AND status = 'approved'`,
             [clubId]
         );
 
         // 3. Pending join requests
-        const [pendingResult] = await db.query(
+        const [[pendingResult]] = await db.query(
             `SELECT COUNT(*) AS pending_requests 
              FROM club_join_requests 
              WHERE club_id = ? AND status = 'pending'`,
@@ -42,7 +42,7 @@ router.get('/dashboard/stats', async (req, res) => {
         );
 
         // 4. Active events count
-        const [activeEventsResult] = await db.query(
+        const [[activeEventsResult]] = await db.query(
             `SELECT COUNT(*) AS active_events 
              FROM events 
              WHERE club_id = ? AND date >= CURDATE()`,
@@ -61,14 +61,54 @@ router.get('/dashboard/stats', async (req, res) => {
 
         // ✅ Send everything in one response
         res.json({
-            totalMembers: membersResult[0].total_members,
-            pendingRequests: pendingResult[0].pending_requests,
-            activeEvents: activeEventsResult[0].active_events,
+            totalMembers: membersResult.total_members,
+            pendingRequests: pendingResult.pending_requests,
+            activeEvents: activeEventsResult.active_events,
             upcomingEvents
         });
 
     } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// GET pending join requests with user details
+router.get('/dashboard/pending-requests', async (req, res) => {
+    try {
+        const adminId = req.session.user?.id;
+        if (!adminId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        // Get club_id for this admin
+        const [[club]] = await db.query(
+            `SELECT c.id 
+             FROM clubs c 
+             JOIN users u ON c.name = u.club_name 
+             WHERE u.id = ?`,
+            [adminId]
+        );
+
+        if (!club) {
+            return res.status(404).json({ message: 'Club not found for this admin.' });
+        }
+
+        const clubId = club.id;
+
+        // Get pending requests with name, department from users
+        const [pendingRequests] = await db.query(
+            `SELECT r.id, u.name, u.department, r.reason, r.year
+             FROM club_join_requests r
+             JOIN users u ON r.user_id = u.id
+             WHERE r.club_id = ? AND r.status = 'pending'`,
+            [clubId]
+        );
+
+        res.json(pendingRequests);
+
+    } catch (error) {
+        console.error('Error fetching pending requests:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
