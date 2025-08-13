@@ -1,3 +1,7 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../db'); // MySQL connection
+
 // GET pending join requests with user details
 router.get('/dashboard/pending-requests', async (req, res) => {
     try {
