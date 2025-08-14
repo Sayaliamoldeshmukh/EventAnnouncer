@@ -147,7 +147,7 @@ router.get('/join/members', async (req, res) => {
     const clubId = club.id;
 
     const [members] = await db.query(
-      `SELECT j.id, u.name, u.email, j.joinedAt 
+      `SELECT j.id, u.name, u.email, j.joined_at 
        FROM joined_clubs j
        JOIN users u ON j.student_id = u.id
        WHERE j.club_id = ?`,
