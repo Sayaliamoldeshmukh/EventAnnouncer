@@ -160,7 +160,7 @@ import "react-toastify/dist/ReactToastify.css";
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 axios.defaults.withCredentials = true;
 
-export default function PendingRequests() {
+export default function PendingRequests({ onActionComplete }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -168,8 +168,8 @@ export default function PendingRequests() {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/join/pending-requests");
-      setRequests(res.data || []);
+      const res = await axios.get("/api/dashboard/pending-requests");
+      setRequests(res.data.pendingRequests || []);
     } catch (err) {
       console.error("Error fetching requests:", err);
       toast.error("Failed to load requests");
@@ -179,14 +179,17 @@ export default function PendingRequests() {
   };
 
   // Approve / Reject actions
-  const handleAction = async (requestId, status) => {
+  const handleAction = async (requestId, action) => {
     try {
-      const res = await axios.post("/api/join/update-request", {
-        request_id: requestId,
-        status,
-      });
-      toast.success(res.data.message || `Request ${status}`);
+      const endpoint =
+        action === "approve"
+          ? `/api/dashboard/pending-requests/${requestId}/approve`
+          : `/api/dashboard/pending-requests/${requestId}/reject`;
+
+      const res = await axios.post(endpoint);
+      toast.success(res.data.message || `Request ${action}d`);
       fetchRequests();
+      if (onActionComplete) onActionComplete();
     } catch (err) {
       console.error("Error updating request:", err);
       toast.error("Action failed");
@@ -218,23 +221,29 @@ export default function PendingRequests() {
               <tr className="bg-indigo-100">
                 <th className="p-3 border-b">Student Name</th>
                 <th className="p-3 border-b">Email</th>
+                <th className="p-3 border-b">Department</th>
+                <th className="p-3 border-b">Year</th>
+                <th className="p-3 border-b">Reason</th>
                 <th className="p-3 border-b text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               {requests.map((req) => (
                 <tr key={req.id} className="hover:bg-gray-50">
-                  <td className="p-3 border-b">{req.student_name}</td>
+                  <td className="p-3 border-b">{req.name}</td>
                   <td className="p-3 border-b">{req.email}</td>
+                  <td className="p-3 border-b">{req.department}</td>
+                  <td className="p-3 border-b">{req.year}</td>
+                  <td className="p-3 border-b">{req.reason}</td>
                   <td className="p-3 border-b text-center">
                     <button
-                      onClick={() => handleAction(req.id, "approved")}
+                      onClick={() => handleAction(req.id, "approve")}
                       className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 mr-2"
                     >
                       Approve
                     </button>
                     <button
-                      onClick={() => handleAction(req.id, "rejected")}
+                      onClick={() => handleAction(req.id, "reject")}
                       className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700"
                     >
                       Reject
@@ -249,4 +258,3 @@ export default function PendingRequests() {
     </div>
   );
 }
-

@@ -422,7 +422,9 @@ export default function ClubDashboard() {
       {/* Main Content */}
       <div className="flex-1 p-6 overflow-y-auto">
         {activeTab === "dashboard" && <DashboardContent stats={stats} />}
-        {activeTab === "pendingRequests" && <PendingRequests />}
+        {activeTab === "pendingRequests" && (
+          <PendingRequests onActionComplete={fetchStats} />
+        )}
       </div>
     </div>
   );
@@ -517,5 +519,3 @@ function StatCard({ title, value, change, icon }) {
     </div>
   );
 }
-
-
