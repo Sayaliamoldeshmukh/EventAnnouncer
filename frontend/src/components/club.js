@@ -592,7 +592,7 @@
 import React, { useState } from 'react';
 import './club.css';
 import Navbar from './navbar.js';
-import Footer from './components/Footer';
+import Footer from './Footer';
 const clubs = [
   {
     id: 1,
