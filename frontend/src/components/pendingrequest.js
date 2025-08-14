@@ -114,7 +114,7 @@ export default function PendingRequests() {
     try {
       // Adjust API route to match backend: /pending-requests/:clubId
       // If clubId is stored in session/backend, you can use /pending-requests directly
-      const res = await axios.get("/pending-requests/1"); // Replace 1 with dynamic clubId if needed
+      const res = await axios.get("/admin-dashboard/pending-requests");// Replace 1 with dynamic clubId if needed
       setRequests(res.data || []);
     } catch (err) {
       console.error("Error fetching requests:", err);
@@ -126,20 +126,21 @@ export default function PendingRequests() {
 
   // Approve / Reject actions
   const handleAction = async (requestId, action) => {
-    try {
-      const endpoint =
-        action === "approved"
-          ? `/approve-request/${requestId}`
-          : `/reject-request/${requestId}`;
+  try {
+    const endpoint =
+      action === "approved"
+        ? `/admin-dashboard/approve-request/${requestId}`
+        : `/admin-dashboard/reject-request/${requestId}`;
 
-      const res = await axios.post(endpoint);
-      toast.success(res.data.message || `Request ${action}`);
-      fetchRequests();
-    } catch (err) {
-      console.error(`Error ${action} request:`, err);
-      toast.error("Action failed");
-    }
-  };
+    const res = await axios.post(endpoint);
+    toast.success(res.data.message || `Request ${action}`);
+    fetchRequests();
+  } catch (err) {
+    console.error(`Error ${action} request:`, err);
+    toast.error("Action failed");
+  }
+};
+
 
   useEffect(() => {
     fetchRequests();

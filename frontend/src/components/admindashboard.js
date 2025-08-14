@@ -358,7 +358,7 @@ export default function ClubDashboard() {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get("/api/dashboard/stats");
+       const res = await axios.get("/admin-dashboard/dashboard/stats");
       setStats(res.data || {});
     } catch (err) {
       console.error("Error fetching stats:", err);
