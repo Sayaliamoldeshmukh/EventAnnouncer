@@ -192,25 +192,37 @@ const Signup = () => {
               required
               className="border rounded px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              className="border rounded px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-            {/* Password Strength Indicator */}
-            {form.password && (
-              <div className="h-2 w-full rounded mt-1">
-                <div
-                  className={`h-2 rounded ${getStrengthColor(passwordStrength)}`}
-                  style={{ width: passwordStrength === 'Weak' ? '33%' : passwordStrength === 'Medium' ? '66%' : '100%' }}
-                ></div>
-                <p className="text-sm text-gray-500 mt-1">{passwordStrength} Password</p>
-              </div>
-            )}
+         {/* Password Input */}
+<input
+  type="password"
+  name="password"
+  placeholder="Password"
+  value={form.password}
+  onChange={handleChange}
+  required
+  className="border rounded px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+/>
+
+{/* Password Strength Indicator */}
+{form.password && (
+  <div className="mt-2">
+    <div className="w-full bg-gray-200 rounded h-2">
+      <div
+        className={`h-2 rounded ${getStrengthColor(passwordStrength)}`}
+        style={{
+          width:
+            passwordStrength === "Weak"
+              ? "33%"
+              : passwordStrength === "Medium"
+              ? "66%"
+              : "100%",
+        }}
+      ></div>
+    </div>
+    <p className="text-sm mt-1 text-gray-600">{passwordStrength} Password</p>
+  </div>
+)}
+
             <input
               type="text"
               name="phone"
@@ -219,7 +231,7 @@ const Signup = () => {
               onChange={handleChange}
               required
               maxLength={10}
-              className="border rounded px-4 py-4 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="border rounded px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
             <input
               type="text"

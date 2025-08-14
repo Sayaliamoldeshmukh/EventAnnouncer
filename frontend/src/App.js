@@ -12,8 +12,8 @@ import Signup from './components/Signup';
 import Event from './components/event';
 import StudentEvents from './components/StudentEvents';
 import ForgetPassword from './components/ForgotPassword';
-import AdminDashboard from './components/admindashboard'; // default export of ClubDashboard
-import MembersList from './components/MembersList';
+//import AdminDashboard from './components/admindashboard'; // default export of ClubDashboard
+//import MembersList from './components/MembersList';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -44,11 +44,6 @@ function App() {
         {/* Club Dashboard */}
         <Route
           path="/club"
-          element={
-            user?.role === 'club_admin'
-              ? <AdminDashboard user={user} />
-              : <Club user={user} />
-          }
         />
 
         {/* Events */}
@@ -62,24 +57,24 @@ function App() {
         />
 
         {/* Members List (Admin only) */}
-        <Route
+        {/* <Route
           path="/members"
           element={
             user?.role === 'club_admin'
               ? <MembersList />
               : <div className="p-6 text-red-500">Unauthorized</div>
           }
-        />
+        /> */}
 
         {/* Admin Dashboard (optional separate route) */}
-        <Route
+        {/* <Route
           path="/admin-dashboard"
           element={
             user?.role === 'club_admin'
               ? <AdminDashboard user={user} />
               : <div className="p-6 text-red-500">Unauthorized</div>
           }
-        />
+        /> */}
       </Routes>
     </Router>
   );
