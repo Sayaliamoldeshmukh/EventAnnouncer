@@ -19,6 +19,7 @@ const Signup = () => {
     role: '',
     club_name: ''
   });
+  const [passwordStrength, setPasswordStrength] = useState('');
 
   const navigate = useNavigate();
 
@@ -26,8 +27,8 @@ const Signup = () => {
   const handleSendOtp = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/auth/send-otp', { email });
-      toast.success("OTP Send successfully ");
+      await axios.post('/api/auth/send-otp', { email });
+      toast.success("OTP sent successfully");
       setStep(2);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send OTP');
@@ -38,8 +39,8 @@ const Signup = () => {
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/auth/verify-otp', { email, otp });
-      toast.success("Verification Successfull");
+      await axios.post('/api/auth/verify-otp', { email, otp });
+      toast.success("Verification successful");
       setStep(3);
     } catch (err) {
       toast.error(err.response?.data?.message || 'OTP verification failed');
@@ -56,11 +57,11 @@ const Signup = () => {
     }
 
     try {
-      const res = await axios.post('/api/auth/signup', {
+      await axios.post('/api/auth/signup', {
         ...form,
         email, // include verified email
       });
-      toast.success("Signup Successfull");
+      toast.success("Signup successful");
       navigate('/login');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Signup failed');
@@ -68,7 +69,44 @@ const Signup = () => {
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+
+    // Password strength detection
+    if (name === 'password') {
+      setPasswordStrength(getPasswordStrength(value));
+    }
+  };
+
+  // Password strength function
+  const getPasswordStrength = (password) => {
+    let score = 0;
+    if (!password) return '';
+
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[@$!%*?&]/.test(password)) score++;
+
+    if (score <= 2) return 'Weak';
+    if (score === 3 || score === 4) return 'Medium';
+    if (score === 5) return 'Strong';
+    return '';
+  };
+
+  // Password strength color
+  const getStrengthColor = (strength) => {
+    switch (strength) {
+      case 'Weak':
+        return 'bg-red-500';
+      case 'Medium':
+        return 'bg-yellow-400';
+      case 'Strong':
+        return 'bg-green-500';
+      default:
+        return '';
+    }
   };
 
   return (
@@ -163,6 +201,16 @@ const Signup = () => {
               required
               className="border rounded px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
+            {/* Password Strength Indicator */}
+            {form.password && (
+              <div className="h-2 w-full rounded mt-1">
+                <div
+                  className={`h-2 rounded ${getStrengthColor(passwordStrength)}`}
+                  style={{ width: passwordStrength === 'Weak' ? '33%' : passwordStrength === 'Medium' ? '66%' : '100%' }}
+                ></div>
+                <p className="text-sm text-gray-500 mt-1">{passwordStrength} Password</p>
+              </div>
+            )}
             <input
               type="text"
               name="phone"
