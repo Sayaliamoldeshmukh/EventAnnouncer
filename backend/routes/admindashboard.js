@@ -116,7 +116,7 @@
 // module.exports = router;
 const express = require("express");
 const router = express.Router();
-const pool = require("../config/db");
+const db = require('../db'); // MySQL connection
 const nodemailer = require("nodemailer");
 
 // Email transporter
