@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import axios from 'axios';
+
+// Components
 import Navbar from './components/navbar';
 import Home from './HomePage';
 import Club from './components/club';
@@ -10,15 +12,14 @@ import Signup from './components/Signup';
 import Event from './components/event';
 import StudentEvents from './components/StudentEvents';
 import ForgetPassword from './components/ForgotPassword';
-
-// ✅ Import main club dashboard instead of pending only
-//import ClubDashboard from './components/ClubDashboard';
-import AdminDashboard from './components/admindashboard'; 
+import AdminDashboard from './components/admindashboard'; // default export of ClubDashboard
+import MembersList from './components/MembersList';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Check user login status
   useEffect(() => {
     axios
       .get('/api/auth/check', { withCredentials: true })
@@ -34,12 +35,13 @@ function App() {
       <Navbar user={user} setUser={setUser} />
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
 
-        {/* ✅ Club route now loads full dashboard for admins */}
+        {/* Club Dashboard */}
         <Route
           path="/club"
           element={
@@ -49,7 +51,7 @@ function App() {
           }
         />
 
-        {/* ✅ Event route */}
+        {/* Events */}
         <Route
           path="/event"
           element={
@@ -59,7 +61,17 @@ function App() {
           }
         />
 
-        {/* ✅ Admin Dashboard */}
+        {/* Members List (Admin only) */}
+        <Route
+          path="/members"
+          element={
+            user?.role === 'club_admin'
+              ? <MembersList />
+              : <div className="p-6 text-red-500">Unauthorized</div>
+          }
+        />
+
+        {/* Admin Dashboard (optional separate route) */}
         <Route
           path="/admin-dashboard"
           element={

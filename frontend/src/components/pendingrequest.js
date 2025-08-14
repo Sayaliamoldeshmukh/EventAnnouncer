@@ -1,76 +1,126 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function PendingRequests() {
   const [requests, setRequests] = useState([]);
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    pendingRequests: 0,
+  });
 
+  // Fetch pending join requests
   const fetchRequests = async () => {
     try {
-      const res = await axios.get(`/api/join/pending-requests`, { withCredentials: true });
-      setRequests(res.data);
+      const res = await axios.get("/api/join/pending-requests", {
+        withCredentials: true,
+      });
+      setRequests(res.data || []);
     } catch (err) {
+      console.error("Error fetching requests:", err);
       toast.error("Failed to load requests");
     }
   };
 
+  // Fetch club stats
+  const fetchStats = async () => {
+    try {
+      const res = await axios.get("/api/join/dashboard/stats", {
+        withCredentials: true,
+      });
+      setStats(res.data || {});
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+      toast.error("Failed to load stats");
+    }
+  };
+
+  // Approve / Reject request
   const handleAction = async (requestId, status) => {
     try {
       const res = await axios.post(
-        '/api/join/update-request',
+        "/api/join/update-request",
         { request_id: requestId, status },
         { withCredentials: true }
       );
-      toast.success(res.data.message);
+      toast.success(res.data.message || `Request ${status}`);
       fetchRequests();
+      fetchStats(); // update stats dynamically
     } catch (err) {
+      console.error(`Error ${status} request:`, err);
       toast.error("Action failed");
     }
   };
 
   useEffect(() => {
     fetchRequests();
+    fetchStats();
   }, []);
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gray-50 min-h-screen">
       <ToastContainer position="top-right" autoClose={3000} />
-      <h2 className="text-2xl font-bold mb-4">Pending Join Requests</h2>
+
+      <h2 className="text-2xl font-bold mb-4 text-purple-600">
+        Pending Join Requests
+      </h2>
+
+      {/* Dynamic Stats */}
+      <div className="flex gap-4 mb-6">
+        <div className="bg-purple-50 p-3 rounded-lg flex-1 flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-500">Total Members</p>
+            <p className="text-lg font-bold">{stats.totalMembers}</p>
+          </div>
+        </div>
+        <div className="bg-purple-50 p-3 rounded-lg flex-1 flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-500">Pending Requests</p>
+            <p className="text-lg font-bold">{stats.pendingRequests}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Requests Table */}
       {requests.length === 0 ? (
-        <p>No pending requests.</p>
+        <p className="text-gray-500 bg-white p-4 rounded shadow">
+          No pending requests.
+        </p>
       ) : (
-        <table className="w-full border">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="p-2">Student Name</th>
-              <th className="p-2">Email</th>
-              <th className="p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {requests.map(req => (
-              <tr key={req.id} className="border-b">
-                <td className="p-2">{req.student_name}</td>
-                <td className="p-2">{req.email}</td>
-                <td className="p-2 flex gap-2">
-                  <button
-                    onClick={() => handleAction(req.id, 'approved')}
-                    className="bg-green-600 text-white px-3 py-1 rounded"
-                  >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => handleAction(req.id, 'rejected')}
-                    className="bg-red-600 text-white px-3 py-1 rounded"
-                  >
-                    Reject
-                  </button>
-                </td>
+        <div className="overflow-x-auto bg-white rounded-lg shadow">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-indigo-100">
+                <th className="p-3 border-b">Name</th>
+                <th className="p-3 border-b">Email</th>
+                <th className="p-3 border-b text-center">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {requests.map((req) => (
+                <tr key={req.request_id} className="hover:bg-gray-50">
+                  <td className="p-3 border-b">{req.name}</td>
+                  <td className="p-3 border-b">{req.email}</td>
+                  <td className="p-3 border-b text-center flex justify-center gap-2">
+                    <button
+                      onClick={() => handleAction(req.request_id, "approved")}
+                      className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleAction(req.request_id, "rejected")}
+                      className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700"
+                    >
+                      Reject
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
