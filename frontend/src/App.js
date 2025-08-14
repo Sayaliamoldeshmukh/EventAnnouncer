@@ -13,7 +13,7 @@ import Event from './components/event';
 import StudentEvents from './components/StudentEvents';
 import ForgetPassword from './components/ForgotPassword';
 import AdminDashboard from './components/admindashboard'; // default export of ClubDashboard
-import MembersList from './components/MembersList';
+import MembersList from './components/MemberList';
 
 function App() {
   const [user, setUser] = useState(null);
