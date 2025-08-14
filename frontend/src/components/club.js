@@ -832,7 +832,7 @@ const Clubs = () => {
 
   return (
     <div className={`min-h-screen bg-gray-50 ${selectedClub ? 'backdrop-blur-sm' : ''}`}>
-      <Navbar />
+   
 
       <div>
         {/* Header */}
