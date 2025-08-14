@@ -114,9 +114,10 @@
 // });
 
 // module.exports = router;
+// routes/dashboard.js
 const express = require("express");
 const router = express.Router();
-const db = require('../db'); // MySQL connection
+const pool = require("../db");
 const nodemailer = require("nodemailer");
 
 // Email transporter
@@ -236,5 +237,34 @@ router.post("/reject-request/:requestId", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+// ✅ Get dashboard stats
+router.get("/stats", async (req, res) => {
+  const clubId = req.query.clubId; // or get from auth/session
+  try {
+    const [[totalMembers]] = await pool.query(
+      "SELECT COUNT(*) AS total FROM joined_clubs WHERE club_id = ?",
+      [clubId]
+    );
 
+    const [[pendingRequests]] = await pool.query(
+      "SELECT COUNT(*) AS total FROM club_join_requests WHERE club_id = ? AND status = 'pending'",
+      [clubId]
+    );
+
+    const [activeEvents] = await pool.query(
+      "SELECT * FROM events WHERE club_id = ? AND date >= CURDATE()",
+      [clubId]
+    );
+
+    res.json({
+      totalMembers: totalMembers.total || 0,
+      pendingRequests: pendingRequests.total || 0,
+      activeEvents: activeEvents.length || 0,
+      upcomingEvents: activeEvents
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 module.exports = router;
