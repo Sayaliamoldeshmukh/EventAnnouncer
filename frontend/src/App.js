@@ -13,7 +13,7 @@ import Event from './components/event';
 import StudentEvents from './components/StudentEvents';
 import ForgetPassword from './components/ForgotPassword';
 import AdminDashboard from './components/admindashboard'; // default export of ClubDashboard
-import MemberList from './components/MemberList';
+import MembersList from './components/MembersList';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -66,7 +66,7 @@ function App() {
           path="/members"
           element={
             user?.role === 'club_admin'
-              ? <MemberList />
+              ? <MembersList />
               : <div className="p-6 text-red-500">Unauthorized</div>
           }
         />
