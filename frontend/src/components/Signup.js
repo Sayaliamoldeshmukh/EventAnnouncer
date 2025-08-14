@@ -219,7 +219,7 @@ const Signup = () => {
               onChange={handleChange}
               required
               maxLength={10}
-              className="border rounded px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="border rounded px-4 py-4 w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
             <input
               type="text"

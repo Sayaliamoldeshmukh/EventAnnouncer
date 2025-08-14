@@ -52,7 +52,7 @@ const HomePage = () => {
                 📅 View Events →
               </a>
               <a href="/club" className="border border-white px-5 py-2 rounded-lg hover:bg-white hover:text-purple-700 transition">
-                👥 Join Clubs →
+                👥 View Clubs →
               </a>
             </div>
 

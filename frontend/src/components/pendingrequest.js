@@ -9,30 +9,50 @@ export default function PendingRequests() {
     totalMembers: 0,
     pendingRequests: 0,
   });
+  const [loadingRequests, setLoadingRequests] = useState(true);
+  const [loadingStats, setLoadingStats] = useState(true);
 
   // Fetch pending join requests
   const fetchRequests = async () => {
     try {
-      const res = await axios.get("/api/join/pending-requests", {
-        withCredentials: true,
-      });
+      setLoadingRequests(true);
+      const res = await axios.get("/api/join/pending-requests", { withCredentials: true });
       setRequests(res.data || []);
     } catch (err) {
-      console.error("Error fetching requests:", err);
-      toast.error("Failed to load requests");
+      if (err.response) {
+        console.error("Error fetching requests:", err.response.data);
+        toast.error(err.response.data.message || "Failed to load requests");
+      } else if (err.request) {
+        console.error("No response from server:", err.request);
+        toast.error("Server not responding. Try again later.");
+      } else {
+        console.error("Axios error:", err.message);
+        toast.error("An error occurred while fetching requests.");
+      }
+    } finally {
+      setLoadingRequests(false);
     }
   };
 
   // Fetch club stats
   const fetchStats = async () => {
     try {
-      const res = await axios.get("/api/join/dashboard/stats", {
-        withCredentials: true,
-      });
-      setStats(res.data || {});
+      setLoadingStats(true);
+      const res = await axios.get("/api/join/dashboard/stats", { withCredentials: true });
+      setStats(res.data || { totalMembers: 0, pendingRequests: 0 });
     } catch (err) {
-      console.error("Error fetching stats:", err);
-      toast.error("Failed to load stats");
+      if (err.response) {
+        console.error("Error fetching stats:", err.response.data);
+        toast.error(err.response.data.message || "Failed to load stats");
+      } else if (err.request) {
+        console.error("No response from server:", err.request);
+        toast.error("Server not responding. Try again later.");
+      } else {
+        console.error("Axios error:", err.message);
+        toast.error("An error occurred while fetching stats.");
+      }
+    } finally {
+      setLoadingStats(false);
     }
   };
 
@@ -48,8 +68,16 @@ export default function PendingRequests() {
       fetchRequests();
       fetchStats(); // update stats dynamically
     } catch (err) {
-      console.error(`Error ${status} request:`, err);
-      toast.error("Action failed");
+      if (err.response) {
+        console.error(`Error ${status} request:`, err.response.data);
+        toast.error(err.response.data.message || "Action failed");
+      } else if (err.request) {
+        console.error(`No response from server for ${status}:`, err.request);
+        toast.error("Server not responding. Try again later.");
+      } else {
+        console.error(`Axios error for ${status}:`, err.message);
+        toast.error("An error occurred. Action failed.");
+      }
     }
   };
 
@@ -71,19 +99,25 @@ export default function PendingRequests() {
         <div className="bg-purple-50 p-3 rounded-lg flex-1 flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-500">Total Members</p>
-            <p className="text-lg font-bold">{stats.totalMembers}</p>
+            <p className="text-lg font-bold">
+              {loadingStats ? "..." : stats.totalMembers || 0}
+            </p>
           </div>
         </div>
         <div className="bg-purple-50 p-3 rounded-lg flex-1 flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-500">Pending Requests</p>
-            <p className="text-lg font-bold">{stats.pendingRequests}</p>
+            <p className="text-lg font-bold">
+              {loadingStats ? "..." : stats.pendingRequests || 0}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Requests Table */}
-      {requests.length === 0 ? (
+      {loadingRequests ? (
+        <p>Loading requests...</p>
+      ) : requests.length === 0 ? (
         <p className="text-gray-500 bg-white p-4 rounded shadow">
           No pending requests.
         </p>

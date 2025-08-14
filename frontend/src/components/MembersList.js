@@ -7,16 +7,36 @@ export default function MembersList() {
   const [members, setMembers] = useState([]);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 10;
 
   // Fetch members from backend
   const fetchMembers = async () => {
     try {
+      setLoading(true);
       const res = await axios.get("/api/join/members", { withCredentials: true });
       setMembers(res.data || []);
     } catch (err) {
-      console.error("Error fetching members:", err);
-      toast.error("Failed to load members");
+      // Better error logging
+      if (err.response) {
+        // Server responded with status code outside 2xx
+        console.error("Error fetching members:", err.response.data);
+        if (err.response.status === 401) {
+          toast.error("Unauthorized. Please login first.");
+        } else {
+          toast.error(err.response.data.message || "Failed to load members");
+        }
+      } else if (err.request) {
+        // Request was made but no response received
+        console.error("No response from server:", err.request);
+        toast.error("Server not responding. Try again later.");
+      } else {
+        // Something else happened
+        console.error("Axios error:", err.message);
+        toast.error("An error occurred while fetching members.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -38,6 +58,8 @@ export default function MembersList() {
     currentPage * itemsPerPage
   );
 
+  if (loading) return <div className="p-6">Loading members...</div>;
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -56,7 +78,9 @@ export default function MembersList() {
       />
 
       {paginatedMembers.length === 0 ? (
-        <p className="text-gray-500 bg-white p-4 rounded shadow">No members found.</p>
+        <p className="text-gray-500 bg-white p-4 rounded shadow">
+          No members found.
+        </p>
       ) : (
         <div className="overflow-x-auto bg-white rounded-lg shadow">
           <table className="w-full text-left border-collapse">
@@ -72,7 +96,11 @@ export default function MembersList() {
                 <tr key={member.id} className="hover:bg-gray-50">
                   <td className="p-3 border-b">{member.name}</td>
                   <td className="p-3 border-b">{member.email}</td>
-                  <td className="p-3 border-b">{new Date(member.joinedAt).toLocaleDateString()}</td>
+                  <td className="p-3 border-b">
+                    {member.joinedAt
+                      ? new Date(member.joinedAt).toLocaleDateString()
+                      : "N/A"}
+                  </td>
                 </tr>
               ))}
             </tbody>
