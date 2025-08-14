@@ -28,7 +28,7 @@ if (process.env.NODE_ENV === 'production') {
 // ✅ CORS
 app.use(
   cors({
-    origin: 'https://event-announcer1.vercel.app',
+    origin: 'https://event-announcer-three.vercel.app/',
     credentials: true
   })
 );
