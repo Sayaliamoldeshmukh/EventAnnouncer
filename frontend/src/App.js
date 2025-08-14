@@ -42,9 +42,11 @@ function App() {
         <Route path="/forgot-password" element={<ForgetPassword />} />
 
         {/* Club Dashboard */}
-        <Route
-          path="/club"
-        />
+        {/* Club Page - accessible to all users */}
+<Route
+  path="/club"
+  element={<Club user={user} />}
+/>
 
         {/* Events */}
         <Route
